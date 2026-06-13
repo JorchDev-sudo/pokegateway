@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: pokegateway
+  profiles:
+    active: dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: DEBUG
+
+pokemon.service:
+  base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}
+
