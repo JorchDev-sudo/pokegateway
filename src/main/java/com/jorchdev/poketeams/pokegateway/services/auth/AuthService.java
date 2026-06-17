@@ -3,6 +3,7 @@ package com.jorchdev.poketeams.pokegateway.services.auth;
 import com.jorchdev.poketeams.pokegateway.dtos.requests.LoginRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.requests.RegisterRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.LoginResponse;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.DuplicateTrainerException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
@@ -18,24 +19,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
     private final TrainerService trainerService;
-    private final TrainerMapper trainerMapper;
-    private final PasswordEncoder passwordEncoder;
     private final TrainerRepository trainerRepository;
+    private final TrainerMapper trainerMapper;
+
+    private final PasswordEncoder passwordEncoder;
+
     private final JwtService jwtService;
+
     private final AuthenticationManager authenticationManager;
 
     public AuthService(
             TrainerService trainerService,
+            TrainerRepository trainerRepository,
             TrainerMapper trainerMapper,
             PasswordEncoder passwordEncoder,
-            TrainerRepository trainerRepository,
             JwtService jwtService,
             AuthenticationManager authenticationManager)
     {
         this.trainerService = trainerService;
+        this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
         this.passwordEncoder = passwordEncoder;
-        this.trainerRepository = trainerRepository;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
@@ -59,15 +63,14 @@ public class AuthService {
                 passwordEncoder.encode(
                         request.password));
 
-        Trainer savedTrainer =
+        TrainerResponseDto savedTrainer =
                 trainerService.createTrainer(trainer);
 
         String token =
-                jwtService.generateToken(
-                        savedTrainer.getEmail());
+                jwtService.generateToken(savedTrainer.id);
 
         return new LoginResponse(
-                trainerMapper.toDto(savedTrainer),
+                savedTrainer,
                 token);
     }
 
@@ -90,7 +93,7 @@ public class AuthService {
 
         String token =
                 jwtService.generateToken(
-                        trainer.getEmail());
+                        trainer.getId());
 
         return new LoginResponse(
                 trainerMapper.toDto(trainer),

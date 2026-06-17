@@ -1,5 +1,7 @@
 package com.jorchdev.poketeams.pokegateway.client.security;
 
+import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
+import com.jorchdev.poketeams.pokegateway.services.security.CustomUserDetailsService;
 import com.jorchdev.poketeams.pokegateway.services.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,15 +19,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public JwtAuthenticationFilter (JwtService jwtService, UserDetailsService userDetailsService){
+    public JwtAuthenticationFilter (
+            JwtService jwtService,
+            CustomUserDetailsService customUserDetailsService)
+    {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -36,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String userEmail;
+        final String userId;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -44,16 +50,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userEmail = jwtService.validateTokenAndRetrieveSubject(jwt);
+        userId = jwtService.extractSubject(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            CustomUserDetails customUserDetails = this.customUserDetailsService.loadUserById(UUID.fromString(userId));
 
-            if (jwtService.validateToken(jwt, userDetails)) {
+            if (jwtService.validateToken(jwt, customUserDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        customUserDetails,
                         null,
-                        userDetails.getAuthorities()
+                        customUserDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

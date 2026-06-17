@@ -4,58 +4,69 @@ import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.UpdateProfileInput;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
+import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class TrainerService {
-    private final TrainerRepository trainerRepository;
+    private final TrainerRepository repository;
+    private final TrainerMapper mapper;
+    private final TrainerHelper helper;
     private final PasswordEncoder passwordEncoder;
-    private final TrainerMapper trainerMapper;
 
     public TrainerService(
             TrainerRepository trainerRepository,
             TrainerMapper trainerMapper,
+            TrainerHelper trainerHelper,
             PasswordEncoder passwordEncoder)
     {
-        this.trainerRepository = trainerRepository;
-        this.trainerMapper = trainerMapper;
+        this.repository = trainerRepository;
+        this.mapper = trainerMapper;
         this.passwordEncoder = passwordEncoder;
+        this.helper = trainerHelper;
     }
 
-    public Trainer createTrainer(Trainer trainer) { return trainerRepository.save(trainer); }
+    public TrainerResponseDto createTrainer(Trainer request) {
+        Trainer trainer = helper.createTrainer(request);
+        Trainer savedTrainer = repository.save(trainer);
 
-    public Optional<Trainer> findTrainerById(UUID id){ return trainerRepository.findById(id); }
-    public Optional<Trainer> findTrainerByName(String name){ return trainerRepository.findByName(name); }
-    public Optional<Trainer> findTrainerByEmail(String email){ return trainerRepository.findByEmail(email); }
+        return mapper.toDto(savedTrainer);
+    }
+
+    public TrainerResponseDto findTrainerById(UUID id){
+        Trainer trainer = helper.getTrainerById(id);
+
+        return mapper.toDto(trainer);
+    }
+
+    public TrainerResponseDto findTrainerByName(String name){
+        Trainer trainer = helper.getTrainerByName(name);
+
+        return mapper.toDto(trainer);
+    }
 
     public TrainerResponseDto updateTrainer(UpdateProfileInput input, String email){
-        Trainer trainer = trainerRepository
-                .findByEmail(email)
-                .orElseThrow(() -> new TrainerNotFoundException("Something went wrong"));
+        Trainer trainer = helper.getTrainerByEmail(email);
 
         trainer.setName(input.name());
         trainer.setEmail(input.email());
 
-        Trainer savedTrainer = trainerRepository.save(trainer);
+        Trainer savedTrainer = repository.save(trainer);
 
-        return trainerMapper.toDto(savedTrainer);
+        return mapper.toDto(savedTrainer);
     }
 
     public void changePassword(
             String email,
             ChangePasswordInput input) {
 
-        Trainer trainer = trainerRepository
-                .findByEmail(email)
-                .orElseThrow(() -> new TrainerNotFoundException("Something went wrong"));
+        Trainer trainer = helper.getTrainerByEmail(email);
 
         if (!passwordEncoder.matches(
                 input.currentPassword(),
@@ -69,16 +80,12 @@ public class TrainerService {
                 passwordEncoder.encode(
                         input.newPassword()));
 
-        trainerRepository.save(trainer);
+        repository.save(trainer);
     }
 
-    public Boolean deleteTrainer(String email) {
-        Trainer trainer = trainerRepository
-                .findByEmail(email)
-                .orElseThrow(() -> new TrainerNotFoundException("Something went wrong"));
+    public void deleteTrainer(String email) {
+        Trainer trainer = helper.getTrainerByEmail(email);
 
-        trainerRepository.delete(trainer);
-
-        return true;
+        repository.delete(trainer);
     }
 }
