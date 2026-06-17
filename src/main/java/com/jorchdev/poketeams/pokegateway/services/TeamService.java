@@ -4,7 +4,7 @@ import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.exceptions.TeamFullException;
+import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamFullException;
 import com.jorchdev.poketeams.pokegateway.repositories.TeamRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

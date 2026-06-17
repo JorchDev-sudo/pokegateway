@@ -1,12 +1,12 @@
 type Pokemon {
-    id: ID!
+    id: Int!
     name: String!
     types: [String!]!
     moves: [String!]!
 }
 
 type Query {
-    findPokemonById(id: ID!): Pokemon
+    findPokemonById(id: Int!): Pokemon
     findPokemonByName(name: String!): Pokemon
 
     findTrainerById(id: ID!): Trainer
@@ -18,17 +18,11 @@ type Query {
 }
 
 type Mutation {
-    registerTrainer(name: String!, email: String!, password: String!): Trainer
-    loginTrainer(email: String!, password: String!): AuthPayload
     createTeam(trainerId: ID!, name: String!): Team
 
     addPokemonToTeam(pokemonId: ID!, teamId: ID!):Team
 }
 
-type AuthPayload {
-    token: String!
-    trainer: Trainer!
-}
 
 type Team{
     id: ID!

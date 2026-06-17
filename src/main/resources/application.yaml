@@ -17,3 +17,5 @@ logging:
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}
 
+jwt_secret: "devTest"
+

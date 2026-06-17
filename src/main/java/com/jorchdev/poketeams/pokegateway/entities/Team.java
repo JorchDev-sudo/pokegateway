@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.entities;
 
-import com.jorchdev.poketeams.pokegateway.exceptions.TeamFullException;
+import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamFullException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

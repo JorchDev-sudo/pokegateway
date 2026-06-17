@@ -20,6 +20,9 @@ public class Trainer {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
+    private String password;
+
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "trainer")
     private Team team;
 }
