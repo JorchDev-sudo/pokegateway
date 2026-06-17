@@ -12,6 +12,7 @@ public class TrainerMapper {
 
         response.id = trainer.getId();
         response.name = trainer.getName();
+        response.email = trainer.getEmail();
 
         return response;
     }

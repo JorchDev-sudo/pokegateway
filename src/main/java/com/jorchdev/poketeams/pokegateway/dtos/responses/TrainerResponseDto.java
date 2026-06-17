@@ -5,4 +5,5 @@ import java.util.UUID;
 public class TrainerResponseDto {
     public UUID id;
     public String name;
+    public String email;
 }

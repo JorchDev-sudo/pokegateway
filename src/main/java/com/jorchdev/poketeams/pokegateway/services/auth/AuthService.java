@@ -60,7 +60,7 @@ public class AuthService {
                         request.password));
 
         Trainer savedTrainer =
-                trainerService.registerTrainer(trainer);
+                trainerService.createTrainer(trainer);
 
         String token =
                 jwtService.generateToken(
