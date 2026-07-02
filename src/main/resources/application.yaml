@@ -12,7 +12,7 @@ spring:
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}

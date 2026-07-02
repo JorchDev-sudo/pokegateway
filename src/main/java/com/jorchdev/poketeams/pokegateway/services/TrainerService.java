@@ -2,8 +2,8 @@ package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.ChangePasswordInput;
-import com.jorchdev.poketeams.pokegateway.entities.internal.UpdateProfileInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;

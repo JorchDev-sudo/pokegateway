@@ -1,9 +1,9 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
-import com.jorchdev.poketeams.pokegateway.entities.internal.ChangePasswordInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
-import com.jorchdev.poketeams.pokegateway.entities.internal.UpdateProfileInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.services.TrainerService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

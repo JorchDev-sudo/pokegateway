@@ -1,9 +1,12 @@
 package com.jorchdev.poketeams.pokegateway.services.helpers;
 
+import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.DuplicateTrainerException;
+import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
+import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -14,6 +17,16 @@ public class TrainerHelper {
 
     public TrainerHelper(TrainerRepository repository) {
         this.repository = repository;
+    }
+
+    public Trainer getCurrentTrainer(Authentication auth){
+        CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
+
+        assert user != null;
+
+        UUID trainerId = user.getId();
+
+        return getTrainerById(trainerId);
     }
 
     public Trainer getTrainerById(UUID id) {
@@ -33,12 +46,17 @@ public class TrainerHelper {
 
     public Trainer createTrainer(Trainer trainer) {
         if (repository.findByEmail(trainer.getEmail()).isPresent()) {
-            throw new DuplicateTrainerException("Trainer with email " + trainer.getEmail() + " already exists");
+            throw new BadCredentialsException("Trainer with email " + trainer.getEmail() + " already exists");
 
         }else if (repository.findByName(trainer.getName()).isPresent()) {
-            throw new DuplicateTrainerException("Trainer with name " + trainer.getName() + " already exists");
+            throw new BadCredentialsException("Trainer with name " + trainer.getName() + " already exists");
         }
 
         return trainer;
+    }
+
+    public void asignTeamToTrainer(Trainer trainer, Team team){
+        trainer.setTeam(team);
+        repository.save(trainer);
     }
 }

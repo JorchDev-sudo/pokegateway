@@ -1,12 +1,13 @@
 package com.jorchdev.poketeams.pokegateway.entities;
 
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
+import com.jorchdev.poketeams.pokegateway.exceptions.team.PokemonNotFoundInTeamException;
 import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamFullException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -24,13 +25,17 @@ public class Team {
     private Trainer trainer;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private List<Integer> pokemonIds;
+    private final Map<Integer, String> pokemons =  new HashMap<>();
 
-    public void addPokemonId(Integer pokemonId) throws TeamFullException {
-        if (pokemonIds.size() == 6) {
+    public void addPokemon(Integer pokemonId, String pokemonName) throws TeamFullException {
+        if (pokemons.size() >= 6) {
             throw new TeamFullException("Pokemon teams must have 6 pokemons or less");
         }else{
-            this.pokemonIds.add(pokemonId);
+            this.pokemons.put(pokemonId, pokemonName);
         }
+    }
+
+    public void removePokemon(int pokemonId){
+        pokemons.remove(pokemonId);
     }
 }

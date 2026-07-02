@@ -5,7 +5,7 @@ import com.jorchdev.poketeams.pokegateway.dtos.requests.RegisterRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.LoginResponse;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.DuplicateTrainerException;
+import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
@@ -50,12 +50,12 @@ public class AuthService {
         Trainer trainer = trainerMapper.toEntity(request);
 
         if (trainerRepository.existsByName(trainer.getName())) {
-            throw new DuplicateTrainerException(
+            throw new BadCredentialsException(
                     "Name already in use");
         }
 
         if (trainerRepository.existsByEmail(trainer.getEmail())) {
-            throw new DuplicateTrainerException(
+            throw new BadCredentialsException(
                     "Email already in use");
         }
 
