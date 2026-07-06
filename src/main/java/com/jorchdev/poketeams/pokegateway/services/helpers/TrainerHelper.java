@@ -57,6 +57,8 @@ public class TrainerHelper {
 
     public void asignTeamToTrainer(Trainer trainer, Team team){
         trainer.setTeam(team);
+        team.setTrainer(trainer);
+
         repository.save(trainer);
     }
 }

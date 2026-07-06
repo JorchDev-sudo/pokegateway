@@ -1,7 +1,5 @@
 package com.jorchdev.poketeams.pokegateway.entities;
 
-import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
-import com.jorchdev.poketeams.pokegateway.exceptions.team.PokemonNotFoundInTeamException;
 import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamFullException;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -27,7 +27,6 @@ type Trainer {
     id: ID!
     name: String!
     email: String!
-    password: String!
     team: Team
 }
 

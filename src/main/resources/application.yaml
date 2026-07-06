@@ -4,6 +4,10 @@ spring:
   profiles:
     active: dev
 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 ---
 spring:
   config:
@@ -12,7 +16,7 @@ spring:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
 
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}

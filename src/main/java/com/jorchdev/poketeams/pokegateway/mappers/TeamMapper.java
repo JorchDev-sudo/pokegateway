@@ -2,6 +2,7 @@ package com.jorchdev.poketeams.pokegateway.mappers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamSummary;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import org.springframework.stereotype.Component;
@@ -13,12 +14,6 @@ import java.util.Map;
 
 @Component
 public class TeamMapper {
-    private final TrainerMapper trainerMapper;
-
-    public TeamMapper(TrainerMapper trainerMapper) {
-        this.trainerMapper = trainerMapper;
-    }
-
     public Team toEntity (String name, Trainer trainer){
         Team team = new Team();
 
@@ -32,9 +27,14 @@ public class TeamMapper {
         return new TeamResponseDto(
                 team.getId(),
                 team.getName(),
-                trainerMapper.toDto(team.getTrainer()),
                 map(team.getPokemons()));
 
+    }
+
+    public TeamSummary toSummary (Team team){
+        if (team == null) return null;
+
+        return new TeamSummary(team.getId(), team.getName(), map(team.getPokemons()));
     }
 
     static List<TeamPokemonResponseDto> map(Map<Integer, String> pokemons) {

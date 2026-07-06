@@ -8,5 +8,4 @@ import java.util.UUID;
 public record TeamResponseDto(
         UUID id,
         String name,
-        TrainerResponseDto trainer,
         List<TeamPokemonResponseDto> pokemons) {}

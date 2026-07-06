@@ -7,12 +7,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TrainerMapper {
+    private final TeamMapper teamMapper;
+
+    public TrainerMapper(TeamMapper teamMapper) {
+        this.teamMapper = teamMapper;
+    }
+
     public TrainerResponseDto toDto(Trainer trainer) {
         TrainerResponseDto response = new TrainerResponseDto();
 
         response.id = trainer.getId();
         response.name = trainer.getName();
         response.email = trainer.getEmail();
+        response.team = teamMapper.toSummary(trainer.getTeam());
 
         return response;
     }
@@ -25,4 +32,5 @@ public class TrainerMapper {
 
         return entity;
     }
+
 }

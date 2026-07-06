@@ -3,7 +3,6 @@ package com.jorchdev.poketeams.pokegateway.services;
 import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.exceptions.team.PokemonNotFoundInTeamException;
