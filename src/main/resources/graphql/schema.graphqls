@@ -1,21 +1,24 @@
 type Query {
-    findPokemonById(id: Int!): Pokemon
-    findPokemonByName(name: String!): Pokemon
+    findPokemonById(id: Int!): Pokemon!
+    findPokemonByName(name: String!): Pokemon!
 
-    findTrainerById(id: ID!): Trainer
-    findTrainerByName(name: String!): Trainer
+    findTrainerById(id: ID!): Trainer!
+    findTrainerByName(name: String!): Trainer!
 
-    me: Trainer
+    me: Trainer!
 
-    findTeamById(id: ID!): Team
+    findTeamById(id: ID!): Team!
     findAllTeams: [Team!]!
 }
 
 type Mutation {
-    createTeam(name: String!): Team
+    createTeam(name: String!): Team!
 
-    addPokemonToTeam(pokemonId: Int!):Team
-    removePokemonFromTeam(pokemonId: Int!):Team
+    addPokemonToTeam(pokemonId: Int!):Team!
+    removePokemonFromTeam(pokemonId: Int!):Team!
+
+    addPokemonToTeamByName(pokemonName: String!):Team!
+    removePokemonFromTeamByName(pokemonName: String!):Team!
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
     changePassword(input: ChangePasswordInput!): Boolean!
@@ -34,7 +37,7 @@ type Team{
     id: ID!
     name: String!
     trainer: Trainer!
-    pokemons: [TeamPokemon!]
+    pokemons: [TeamPokemon]!
 }
 
 type Pokemon {
@@ -50,8 +53,8 @@ type TeamPokemon {
 }
 
 input UpdateProfileInput {
-    name: String
-    email: String
+    name: String!
+    email: String!
 }
 
 input ChangePasswordInput {

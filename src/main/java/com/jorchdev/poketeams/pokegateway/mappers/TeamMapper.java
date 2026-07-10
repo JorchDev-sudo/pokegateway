@@ -27,11 +27,12 @@ public class TeamMapper {
         return new TeamResponseDto(
                 team.getId(),
                 team.getName(),
+                TrainerMapper.toBasicDto(team.getTrainer()),
                 map(team.getPokemons()));
 
     }
 
-    public TeamSummary toSummary (Team team){
+    public static TeamSummary toSummary (Team team){
         if (team == null) return null;
 
         return new TeamSummary(team.getId(), team.getName(), map(team.getPokemons()));

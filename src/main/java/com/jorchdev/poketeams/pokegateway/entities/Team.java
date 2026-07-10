@@ -36,4 +36,7 @@ public class Team {
     public void removePokemon(int pokemonId){
         pokemons.remove(pokemonId);
     }
+    public void removePokemonByName(String name){
+        pokemons.values().removeIf(x -> x.equals(name));
+    }
 }

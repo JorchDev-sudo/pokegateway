@@ -92,6 +92,17 @@ public class TeamService {
         return mapper.toDto(savedTeam);
     }
 
+    public TeamResponseDto addPokemonToTeamByName(String name, UUID teamId) throws TeamFullException, EntityNotFoundException {
+        Team team = helper.getTeamById(teamId);
+
+        PokemonResponseDto pokemon = pokemonServiceClient.getPokemonByName(name);
+
+        team.addPokemon(pokemon.id, pokemon.name);
+        Team savedTeam = teamRepository.save(team);
+
+        return mapper.toDto(savedTeam);
+    }
+
     public TeamResponseDto removePokemonFromTeam(int pokemonId, UUID teamId) throws PokemonNotFoundInTeamException {
         Team team = helper.getTeamById(teamId);
 
@@ -101,4 +112,15 @@ public class TeamService {
 
         return mapper.toDto(savedTeam);
     }
+
+    public TeamResponseDto removePokemonFromTeamByName(String name, UUID teamId) throws PokemonNotFoundInTeamException {
+        Team team = helper.getTeamById(teamId);
+
+        team.removePokemonByName(name);
+
+        Team savedTeam = teamRepository.save(team);
+
+        return mapper.toDto(savedTeam);
+    }
+
 }

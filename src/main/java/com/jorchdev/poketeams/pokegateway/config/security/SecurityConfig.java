@@ -77,7 +77,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/graphql").authenticated()
+                        .requestMatchers("/graphql").permitAll()
 
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/h2-console").permitAll()

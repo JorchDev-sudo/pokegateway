@@ -31,7 +31,6 @@ public class TeamController {
         return service.findTeamById(id);
     }
 
-    //Todo Añadir paginación a findAllTeams
     @QueryMapping
     public List<TeamResponseDto> findAllTeams(){
         return service.findAllTeams();
@@ -54,11 +53,29 @@ public class TeamController {
     }
 
     @MutationMapping
+    public TeamResponseDto addPokemonToTeamByName(@Argument String pokemonName, Authentication auth) {
+        Trainer trainer = trainerHelper.getCurrentTrainer(auth);
+
+        UUID teamId = trainer.getTeam().getId();
+
+        return service.addPokemonToTeamByName(pokemonName, teamId);
+    }
+
+    @MutationMapping
     public TeamResponseDto  removePokemonFromTeam(@Argument int pokemonId, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
 
         return service.removePokemonFromTeam(pokemonId, teamId);
+    }
+
+    @MutationMapping
+    public TeamResponseDto  removePokemonFromTeamByName(@Argument String pokemonName, Authentication auth) {
+        Trainer trainer = trainerHelper.getCurrentTrainer(auth);
+
+        UUID teamId = trainer.getTeam().getId();
+
+        return service.removePokemonFromTeamByName(pokemonName, teamId);
     }
 }
