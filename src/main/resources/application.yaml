@@ -14,12 +14,18 @@ spring:
     activate:
       on-profile: dev
 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
 logging:
   level:
     root: DEBUG
 
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}
+
+
 
 jwt_secret: "devTest"
 

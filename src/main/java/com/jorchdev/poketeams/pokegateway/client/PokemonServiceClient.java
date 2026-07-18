@@ -30,6 +30,8 @@ public class PokemonServiceClient {
     }
 
     public PokemonResponseDto getPokemonByName(String name){
+        System.out.println(name);
+
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder

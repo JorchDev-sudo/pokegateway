@@ -4,11 +4,12 @@ import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamSummary;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
+import com.jorchdev.poketeams.pokegateway.entities.TeamPokemon;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 //TODO Modificar este mapper para que use MapStruct y así poder updatear campos
 
@@ -38,13 +39,27 @@ public class TeamMapper {
         return new TeamSummary(team.getId(), team.getName(), map(team.getPokemons()));
     }
 
-    static List<TeamPokemonResponseDto> map(Map<Integer, String> pokemons) {
-        return pokemons.entrySet()
-                .stream()
-                .map(entry ->
-                        new TeamPokemonResponseDto(
-                                entry.getKey(),
-                                entry.getValue()))
-                .toList();
+    static List<TeamPokemonResponseDto> map(List<TeamPokemon> pokemons) {
+
+        List<TeamPokemonResponseDto> response = new ArrayList<>();
+
+        for (int i = 0; i < pokemons.size(); i++) {
+
+            TeamPokemon pokemon = pokemons.get(i);
+
+            if (pokemon == null) {
+                continue;
+            }
+
+            response.add(
+                    new TeamPokemonResponseDto(
+                            pokemon.getPokemonId(),
+                            pokemon.getPokemonName(),
+                            i
+                    )
+            );
+        }
+
+        return response;
     }
 }

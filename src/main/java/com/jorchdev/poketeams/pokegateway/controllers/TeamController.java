@@ -2,6 +2,7 @@ package com.jorchdev.poketeams.pokegateway.controllers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
 import com.jorchdev.poketeams.pokegateway.services.TeamService;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -49,7 +50,7 @@ public class TeamController {
 
         UUID teamId = trainer.getTeam().getId();
 
-        return service.addPokemonToTeam(pokemonId, teamId);
+        return service.addPokemonToTeamById(pokemonId, teamId);
     }
 
     @MutationMapping
@@ -62,20 +63,20 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponseDto  removePokemonFromTeam(@Argument int pokemonId, Authentication auth) {
+    public TeamResponseDto movePokemons(@Argument List<PokemonPositionInput> positions, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
 
-        return service.removePokemonFromTeam(pokemonId, teamId);
+        return service.movePokemons(positions, teamId);
     }
 
     @MutationMapping
-    public TeamResponseDto  removePokemonFromTeamByName(@Argument String pokemonName, Authentication auth) {
+    public TeamResponseDto  removePokemonFromTeam(@Argument int id, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
 
-        return service.removePokemonFromTeamByName(pokemonName, teamId);
+        return service.removePokemon(id, teamId);
     }
 }

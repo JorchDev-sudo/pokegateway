@@ -5,8 +5,9 @@ import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
 import com.jorchdev.poketeams.pokegateway.exceptions.team.PokemonNotFoundInTeamException;
-import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamFullException;
+import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerAlreadyHaveATeamException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
 import com.jorchdev.poketeams.pokegateway.mappers.TeamMapper;
@@ -81,7 +82,7 @@ public class TeamService {
         return response;
     }
 
-    public TeamResponseDto addPokemonToTeam(int pokemonId, UUID teamId) throws TeamFullException, EntityNotFoundException {
+    public TeamResponseDto addPokemonToTeamById(int pokemonId, UUID teamId) throws TeamException, EntityNotFoundException {
         Team team = helper.getTeamById(teamId);
 
         PokemonResponseDto pokemon = pokemonServiceClient.getPokemonById(pokemonId);
@@ -92,7 +93,7 @@ public class TeamService {
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto addPokemonToTeamByName(String name, UUID teamId) throws TeamFullException, EntityNotFoundException {
+    public TeamResponseDto addPokemonToTeamByName(String name, UUID teamId) throws TeamException, EntityNotFoundException {
         Team team = helper.getTeamById(teamId);
 
         PokemonResponseDto pokemon = pokemonServiceClient.getPokemonByName(name);
@@ -103,20 +104,20 @@ public class TeamService {
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto removePokemonFromTeam(int pokemonId, UUID teamId) throws PokemonNotFoundInTeamException {
+    public TeamResponseDto movePokemons(List<PokemonPositionInput> positions, UUID teamId) {
         Team team = helper.getTeamById(teamId);
 
-        team.removePokemon(pokemonId);
+        team.reorderPokemons(positions);
 
         Team savedTeam = teamRepository.save(team);
 
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto removePokemonFromTeamByName(String name, UUID teamId) throws PokemonNotFoundInTeamException {
+    public TeamResponseDto removePokemon(int id, UUID teamId) throws PokemonNotFoundInTeamException {
         Team team = helper.getTeamById(teamId);
 
-        team.removePokemonByName(name);
+        team.removePokemon(id);
 
         Team savedTeam = teamRepository.save(team);
 

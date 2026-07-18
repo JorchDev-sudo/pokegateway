@@ -14,16 +14,17 @@ type Query {
 type Mutation {
     createTeam(name: String!): Team!
 
-    addPokemonToTeam(pokemonId: Int!):Team!
-    removePokemonFromTeam(pokemonId: Int!):Team!
-
+    addPokemonToTeamById(pokemonId: Int!):Team!
     addPokemonToTeamByName(pokemonName: String!):Team!
-    removePokemonFromTeamByName(pokemonName: String!):Team!
+
+    removePokemonFromTeam(pokemonId: Int!):Team!
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
     changePassword(input: ChangePasswordInput!): Boolean!
 
     deleteMyTrainer: Boolean!
+
+    movePokemons(positions: [PokemonPositionInput!]!): Team!
 }
 
 type Trainer {
@@ -37,7 +38,7 @@ type Team{
     id: ID!
     name: String!
     trainer: Trainer!
-    pokemons: [TeamPokemon]!
+    pokemons: [TeamPokemon]
 }
 
 type Pokemon {
@@ -45,11 +46,13 @@ type Pokemon {
     name: String!
     types: [String!]!
     moves: [String!]!
+    position: Int!
 }
 
 type TeamPokemon {
     id: Int!
     name: String!
+    position: Int!
 }
 
 input UpdateProfileInput {
@@ -61,3 +64,9 @@ input ChangePasswordInput {
     currentPassword: String!
     newPassword: String!
 }
+
+input PokemonPositionInput {
+    pokemonId: Int!
+    position: Int!
+}
+
