@@ -53,6 +53,7 @@ public class TeamMapper {
 
             response.add(
                     new TeamPokemonResponseDto(
+                            pokemon.getId(),
                             pokemon.getPokemonId(),
                             pokemon.getPokemonName(),
                             i

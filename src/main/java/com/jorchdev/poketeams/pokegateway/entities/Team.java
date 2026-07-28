@@ -48,8 +48,8 @@ public class Team {
         );
     }
 
-    public void removePokemon(int pokemonId) {
-        pokemons.removeIf(tp -> tp.getPokemonId() == pokemonId);
+    public void removePokemon(UUID id) {
+        pokemons.removeIf(tp -> tp.getId().equals(id));
         recalculatePositions();
     }
 

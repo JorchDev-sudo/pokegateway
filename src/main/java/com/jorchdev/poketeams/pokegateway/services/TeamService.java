@@ -114,7 +114,7 @@ public class TeamService {
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto removePokemon(int id, UUID teamId) throws PokemonNotFoundInTeamException {
+    public TeamResponseDto removePokemon(UUID id, UUID teamId) throws PokemonNotFoundInTeamException {
         Team team = helper.getTeamById(teamId);
 
         team.removePokemon(id);

@@ -17,7 +17,7 @@ type Mutation {
     addPokemonToTeamById(pokemonId: Int!):Team!
     addPokemonToTeamByName(pokemonName: String!):Team!
 
-    removePokemonFromTeam(pokemonId: Int!):Team!
+    removePokemonFromTeamById(id: ID!):Team!
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
     changePassword(input: ChangePasswordInput!): Boolean!
@@ -50,7 +50,8 @@ type Pokemon {
 }
 
 type TeamPokemon {
-    id: Int!
+    id: ID!
+    pokemonId: Int!
     name: String!
     position: Int!
 }

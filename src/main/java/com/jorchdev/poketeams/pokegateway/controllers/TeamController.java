@@ -45,7 +45,7 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponseDto addPokemonToTeam(@Argument int pokemonId, Authentication auth) {
+    public TeamResponseDto addPokemonToTeamById(@Argument int pokemonId, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
@@ -72,7 +72,7 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponseDto  removePokemonFromTeam(@Argument int id, Authentication auth) {
+    public TeamResponseDto removePokemonFromTeamById(@Argument UUID id, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
