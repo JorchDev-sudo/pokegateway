@@ -67,7 +67,7 @@ input ChangePasswordInput {
 }
 
 input PokemonPositionInput {
-    pokemonId: Int!
+    id: ID!
     position: Int!
 }
 

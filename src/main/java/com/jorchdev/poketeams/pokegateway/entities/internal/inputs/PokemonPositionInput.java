@@ -1,3 +1,5 @@
 package com.jorchdev.poketeams.pokegateway.entities.internal.inputs;
 
-public record PokemonPositionInput(int pokemonId, int position) {}
+import java.util.UUID;
+
+public record PokemonPositionInput(UUID id, int position) {}

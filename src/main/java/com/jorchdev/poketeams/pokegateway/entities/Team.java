@@ -5,11 +5,13 @@ import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @Entity
 @Getter
 public class Team {
@@ -53,13 +55,13 @@ public class Team {
         recalculatePositions();
     }
 
-    public void reorderPokemons(List<PokemonPositionInput> newPositions) {
+    public void movePokemons(List<PokemonPositionInput> newPositions) {
         validateNewPositions(newPositions);
 
-        Map<Integer, Integer> desiredPositionByPokemonId = newPositions.stream()
-                .collect(Collectors.toMap(PokemonPositionInput::pokemonId, PokemonPositionInput::position));
+        Map<UUID, Integer> desiredPositionById = newPositions.stream()
+                .collect(Collectors.toMap(PokemonPositionInput::id, PokemonPositionInput::position));
 
-        pokemons.sort(Comparator.comparingInt(tp -> desiredPositionByPokemonId.get(tp.getPokemonId())));
+        pokemons.sort(Comparator.comparingInt(tp -> desiredPositionById.get(tp.getId())));
 
         recalculatePositions();
     }
@@ -69,15 +71,22 @@ public class Team {
             throw new TeamException("You must indicate the positions for all the pokemons in the team");
         }
 
-        Set<Integer> currentIds = pokemons.stream()
-                .map(TeamPokemon::getPokemonId)
+        Set<UUID> currentIds = pokemons.stream()
+                .map(TeamPokemon::getId)
                 .collect(Collectors.toSet());
 
-        Set<Integer> incomingIds = newPositions.stream()
-                .map(PokemonPositionInput::pokemonId)
+        Set<UUID> incomingIds = newPositions.stream()
+                .map(PokemonPositionInput::id)
                 .collect(Collectors.toSet());
 
         if (!currentIds.equals(incomingIds)) {
+            newPositions.forEach(tp -> {
+                log.error(
+                        "Pokemon position inputs: {} {}",
+                        tp.id(), tp.position()
+                );
+            });
+
             throw new TeamException("The positions must refer exactly to the Pokemon currently on the team, without duplicates.");
         }
 

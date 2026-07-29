@@ -107,7 +107,7 @@ public class TeamService {
     public TeamResponseDto movePokemons(List<PokemonPositionInput> positions, UUID teamId) {
         Team team = helper.getTeamById(teamId);
 
-        team.reorderPokemons(positions);
+        team.movePokemons(positions);
 
         Team savedTeam = teamRepository.save(team);
 
