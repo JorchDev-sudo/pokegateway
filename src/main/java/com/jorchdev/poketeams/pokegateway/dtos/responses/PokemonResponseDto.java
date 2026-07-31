@@ -1,12 +1,13 @@
 package com.jorchdev.poketeams.pokegateway.dtos.responses;
 
 import java.util.List;
+import java.util.UUID;
 
-//TODO Refactorizar esta clase para que sea record
-
-public class PokemonResponseDto {
-    public int id;
-    public String name;
-    public List<String> types;
-    public List<String> moves;
-}
+public record PokemonResponseDto (
+        UUID id,
+        int pokemonId,
+        String name,
+        String pokemonName,
+        List<String> types,
+        List<String> moves
+){}

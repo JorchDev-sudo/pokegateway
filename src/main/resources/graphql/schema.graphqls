@@ -17,6 +17,8 @@ type Mutation {
     addPokemonToTeamById(pokemonId: Int!):Team!
     addPokemonToTeamByName(pokemonName: String!):Team!
 
+    addPreConstructedTeam(team: )
+
     removePokemonFromTeamById(id: ID!):Team!
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
@@ -44,6 +46,7 @@ type Team{
 type Pokemon {
     id: Int!
     name: String!
+    pokemonName: String!
     types: [String!]!
     moves: [String!]!
     position: Int!

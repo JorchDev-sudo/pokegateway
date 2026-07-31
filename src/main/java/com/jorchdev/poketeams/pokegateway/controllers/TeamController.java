@@ -62,6 +62,10 @@ public class TeamController {
         return service.addPokemonToTeamByName(pokemonName, teamId);
     }
 
+    /*
+    @MutationMapping
+    public TeamResponseDto addPreConstructedTeam(@Argument )
+     */
     @MutationMapping
     public TeamResponseDto movePokemons(@Argument List<PokemonPositionInput> positions, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
