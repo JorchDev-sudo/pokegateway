@@ -1,18 +1,18 @@
 package com.jorchdev.poketeams.pokegateway.mappers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
-import com.jorchdev.poketeams.pokegateway.entities.TeamPokemon;
+import com.jorchdev.poketeams.pokegateway.entities.Pokemon;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PokemonMapper {
-    public PokemonResponseDto toDto (TeamPokemon teamPokemon){
+    public PokemonResponseDto toDto (Pokemon pokemon){
         return new PokemonResponseDto(
-                teamPokemon.getId(),
-                teamPokemon.getPokemonId(),
-                teamPokemon.getName(),
-                teamPokemon.getPokemonName(),
-                teamPokemon.getTypes(),
-                teamPokemon.getMoves());
+                pokemon.getId(),
+                pokemon.getPokemonId(),
+                pokemon.getName(),
+                pokemon.getNickname(),
+                pokemon.getTypes(),
+                pokemon.getMoves());
     }
 }

@@ -15,7 +15,6 @@ import java.util.stream.IntStream;
 @Entity
 @Getter
 public class Team {
-
     @Id
     @GeneratedValue
     private UUID id;
@@ -24,7 +23,7 @@ public class Team {
     private String name;
 
     @Setter
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
 
@@ -34,14 +33,14 @@ public class Team {
             orphanRemoval = true
     )
     @OrderBy("position ASC")
-    private final List<TeamPokemon> pokemons = new ArrayList<>();
+    private final List<Pokemon> pokemons = new ArrayList<>();
 
     public void addPokemon(int pokemonId, String pokemonName) {
         if (pokemons.size() >= 6)
             throw new TeamException("Maximum 6 pokemons");
 
         pokemons.add(
-                new TeamPokemon(
+                new Pokemon(
                         this,
                         pokemonId,
                         pokemonName,
@@ -72,7 +71,7 @@ public class Team {
         }
 
         Set<UUID> currentIds = pokemons.stream()
-                .map(TeamPokemon::getId)
+                .map(Pokemon::getId)
                 .collect(Collectors.toSet());
 
         Set<UUID> incomingIds = newPositions.stream()

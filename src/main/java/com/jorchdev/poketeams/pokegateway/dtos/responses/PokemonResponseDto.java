@@ -7,7 +7,7 @@ public record PokemonResponseDto (
         UUID id,
         int pokemonId,
         String name,
-        String pokemonName,
+        String nickname,
         List<String> types,
         List<String> moves
 ){}

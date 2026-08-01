@@ -3,8 +3,8 @@ package com.jorchdev.poketeams.pokegateway.mappers;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamPokemonResponseDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TeamSummary;
+import com.jorchdev.poketeams.pokegateway.entities.Pokemon;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
-import com.jorchdev.poketeams.pokegateway.entities.TeamPokemon;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import org.springframework.stereotype.Component;
 
@@ -39,13 +39,13 @@ public class TeamMapper {
         return new TeamSummary(team.getId(), team.getName(), map(team.getPokemons()));
     }
 
-    static List<TeamPokemonResponseDto> map(List<TeamPokemon> pokemons) {
+    static List<TeamPokemonResponseDto> map(List<Pokemon> pokemons) {
 
         List<TeamPokemonResponseDto> response = new ArrayList<>();
 
         for (int i = 0; i < pokemons.size(); i++) {
 
-            TeamPokemon pokemon = pokemons.get(i);
+            Pokemon pokemon = pokemons.get(i);
 
             if (pokemon == null) {
                 continue;
@@ -55,7 +55,7 @@ public class TeamMapper {
                     new TeamPokemonResponseDto(
                             pokemon.getId(),
                             pokemon.getPokemonId(),
-                            pokemon.getPokemonName(),
+                            pokemon.getName(),
                             i
                     )
             );

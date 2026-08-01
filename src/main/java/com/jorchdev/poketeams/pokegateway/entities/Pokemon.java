@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-public class TeamPokemon {
+public class Pokemon {
     @Id
     @GeneratedValue
     private UUID id;
@@ -19,10 +19,10 @@ public class TeamPokemon {
 
     private int pokemonId;
 
-    @Setter
-    private String pokemonName;
-
     private String name;
+
+    @Setter
+    private String nickname;
 
     private List<String> types;
 
@@ -31,16 +31,16 @@ public class TeamPokemon {
     @Setter
     protected int position;
 
-    public TeamPokemon(){}
+    public Pokemon(){}
 
-    public TeamPokemon(String name) {
-        this.name = name;
+    public Pokemon(String nickname) {
+        this.nickname = nickname;
     }
 
-    public TeamPokemon(Team team, int pokemonId, String pokemonName, int position) {
+    public Pokemon(Team team, int pokemonId, String name, int position) {
         this.team = team;
         this.pokemonId = pokemonId;
-        this.pokemonName = pokemonName;
+        this.name = name;
         this.position = position;
     }
 }

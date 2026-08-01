@@ -1,10 +1,9 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
+import com.jorchdev.poketeams.pokegateway.entities.Pokemon;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
-import com.jorchdev.poketeams.pokegateway.entities.TeamPokemon;
 import com.jorchdev.poketeams.pokegateway.mappers.PokemonMapper;
-import com.jorchdev.poketeams.pokegateway.repositories.TeamRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,10 +17,10 @@ public class PokemonService {
         this.pokemonMapper = pokemonMapper;
     }
 
-    public PokemonResponseDto changePokemonName (Team team, UUID id, String newName){
-        for (TeamPokemon pokemon : team.getPokemons()){
+    public PokemonResponseDto changePokemonNickname (Team team, UUID id, String newNickname){
+        for (Pokemon pokemon : team.getPokemons()){
             if (pokemon.getId().equals(id)){
-                pokemon.setPokemonName(newName);
+                pokemon.setNickname(newNickname);
 
                 return pokemonMapper.toDto(pokemon);
             }
