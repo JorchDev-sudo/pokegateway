@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
 import com.jorchdev.poketeams.pokegateway.services.TeamService;
@@ -28,24 +28,24 @@ public class TeamController {
     }
 
     @QueryMapping
-    public TeamResponseDto findTeamById(@Argument UUID id){
+    public TeamResponse findTeamById(@Argument UUID id){
         return service.findTeamById(id);
     }
 
     @QueryMapping
-    public List<TeamResponseDto> findAllTeams(){
+    public List<TeamResponse> findAllTeams(){
         return service.findAllTeams();
     }
 
     @MutationMapping
-    public TeamResponseDto createTeam(@Argument String name, Authentication auth) {
+    public TeamResponse createTeam(@Argument String name, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         return service.createTeam(trainer.getId(), name);
     }
 
     @MutationMapping
-    public TeamResponseDto addPokemonToTeamById(@Argument int pokemonId, Authentication auth) {
+    public TeamResponse addPokemonToTeamById(@Argument int pokemonId, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
@@ -54,7 +54,7 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponseDto addPokemonToTeamByName(@Argument String pokemonName, Authentication auth) {
+    public TeamResponse addPokemonToTeamByName(@Argument String pokemonName, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
@@ -64,10 +64,10 @@ public class TeamController {
 
     /*
     @MutationMapping
-    public TeamResponseDto addPreConstructedTeam(@Argument )
+    public TeamResponse addPreConstructedTeam(@Argument )
      */
     @MutationMapping
-    public TeamResponseDto movePokemons(@Argument List<PokemonPositionInput> positions, Authentication auth) {
+    public TeamResponse movePokemons(@Argument List<PokemonPositionInput> positions, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
@@ -76,7 +76,7 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponseDto removePokemonFromTeamById(@Argument UUID id, Authentication auth) {
+    public TeamResponse removePokemonFromTeamById(@Argument UUID id, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();

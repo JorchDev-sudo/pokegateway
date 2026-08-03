@@ -54,11 +54,4 @@ public class TrainerHelper {
 
         return trainer;
     }
-
-    public void asignTeamToTrainer(Trainer trainer, Team team){
-        trainer.setTeam(team);
-        team.setTrainer(trainer);
-
-        repository.save(trainer);
-    }
 }

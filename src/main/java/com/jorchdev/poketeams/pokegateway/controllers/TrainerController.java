@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
@@ -23,7 +23,7 @@ public class TrainerController {
     }
 
     @QueryMapping
-    public TrainerResponseDto me(Authentication auth){
+    public TrainerResponse me(Authentication auth){
         CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
 
         assert user != null;
@@ -33,17 +33,17 @@ public class TrainerController {
     }
 
     @QueryMapping
-    public TrainerResponseDto findTrainerById(@Argument UUID id){
+    public TrainerResponse findTrainerById(@Argument UUID id){
         return trainerService.findTrainerById(id);
     }
 
     @QueryMapping
-    public TrainerResponseDto findTrainerByName(@Argument String name){
+    public TrainerResponse findTrainerByName(@Argument String name){
         return trainerService.findTrainerByName(name);
     }
 
     @MutationMapping
-    public TrainerResponseDto updateProfile(@Argument UpdateProfileInput input, Authentication authentication) {
+    public TrainerResponse updateProfile(@Argument UpdateProfileInput input, Authentication authentication) {
         return trainerService.updateTrainer(
                 input,
                 authentication.getName());

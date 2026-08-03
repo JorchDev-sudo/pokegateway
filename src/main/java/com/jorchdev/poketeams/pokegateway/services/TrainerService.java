@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
@@ -32,26 +32,26 @@ public class TrainerService {
         this.helper = trainerHelper;
     }
 
-    public TrainerResponseDto createTrainer(Trainer request) {
+    public TrainerResponse createTrainer(Trainer request) {
         Trainer trainer = helper.createTrainer(request);
         Trainer savedTrainer = repository.save(trainer);
 
         return mapper.toDto(savedTrainer);
     }
 
-    public TrainerResponseDto findTrainerById(UUID id){
+    public TrainerResponse findTrainerById(UUID id){
         Trainer trainer = helper.getTrainerById(id);
 
         return mapper.toDto(trainer);
     }
 
-    public TrainerResponseDto findTrainerByName(String name){
+    public TrainerResponse findTrainerByName(String name){
         Trainer trainer = helper.getTrainerByName(name);
 
         return mapper.toDto(trainer);
     }
 
-    public TrainerResponseDto updateTrainer(UpdateProfileInput input, String email){
+    public TrainerResponse updateTrainer(UpdateProfileInput input, String email){
         Trainer trainer = helper.getTrainerByEmail(email);
 
         trainer.setName(input.name());

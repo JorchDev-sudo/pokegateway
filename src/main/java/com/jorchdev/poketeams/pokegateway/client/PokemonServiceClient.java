@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.client;
 
-import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.ApiPokemonResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
@@ -16,7 +16,7 @@ public class PokemonServiceClient {
         this.webClient = webClient;
     }
 
-    public PokemonResponseDto getPokemonById(int pokemonId) {
+    public ApiPokemonResponse getPokemonById(int pokemonId) {
         return webClient
                 .get()
                 .uri("/api/pokemon/{id}", pokemonId)
@@ -25,11 +25,11 @@ public class PokemonServiceClient {
                         HttpStatusCode::is4xxClientError,
                         response -> Mono.error(new EntityNotFoundException())
                 )
-                .bodyToMono(PokemonResponseDto.class)
+                .bodyToMono(ApiPokemonResponse.class)
                 .block();
     }
 
-    public PokemonResponseDto getPokemonByName(String name){
+    public ApiPokemonResponse getPokemonByName(String name){
         System.out.println(name);
 
         return webClient
@@ -43,7 +43,7 @@ public class PokemonServiceClient {
                         HttpStatusCode::is4xxClientError,
                         response -> Mono.error(new EntityNotFoundException())
                 )
-                .bodyToMono(PokemonResponseDto.class)
+                .bodyToMono(ApiPokemonResponse.class)
                 .block();
     }
 }

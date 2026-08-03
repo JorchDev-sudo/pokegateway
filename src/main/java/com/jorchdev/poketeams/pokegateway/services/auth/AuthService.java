@@ -3,7 +3,7 @@ package com.jorchdev.poketeams.pokegateway.services.auth;
 import com.jorchdev.poketeams.pokegateway.dtos.requests.LoginRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.requests.RegisterRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.LoginResponse;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
 import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
@@ -63,11 +63,11 @@ public class AuthService {
                 passwordEncoder.encode(
                         request.password));
 
-        TrainerResponseDto savedTrainer =
+        TrainerResponse savedTrainer =
                 trainerService.createTrainer(trainer);
 
         String token =
-                jwtService.generateToken(savedTrainer.id);
+                jwtService.generateToken(savedTrainer.id());
 
         return new LoginResponse(
                 savedTrainer,

@@ -23,6 +23,6 @@ public class Trainer {
     @Column(nullable = false)
     private String password;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "trainer")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "trainer")
     private Team team;
 }

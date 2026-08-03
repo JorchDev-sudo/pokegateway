@@ -17,7 +17,7 @@ type Mutation {
     addPokemonToTeamById(pokemonId: Int!):Team!
     addPokemonToTeamByName(pokemonName: String!):Team!
 
-    addPreConstructedTeam(team: )
+    changePokemonNickName(nickname: String!): Pokemon
 
     removePokemonFromTeamById(id: ID!):Team!
 
@@ -45,8 +45,8 @@ type Team{
 
 type Pokemon {
     id: Int!
+    nickname: String!
     name: String!
-    pokemonName: String!
     types: [String!]!
     moves: [String!]!
     position: Int!
@@ -55,6 +55,7 @@ type Pokemon {
 type TeamPokemon {
     id: ID!
     pokemonId: Int!
+    nickname: String!
     name: String!
     position: Int!
 }

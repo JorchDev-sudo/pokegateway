@@ -4,6 +4,7 @@ import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositi
 import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamException;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,8 +23,7 @@ public class Team {
     @Setter
     private String name;
 
-    @Setter
-    @ManyToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
 
@@ -33,9 +33,9 @@ public class Team {
             orphanRemoval = true
     )
     @OrderBy("position ASC")
-    private final List<Pokemon> pokemons = new ArrayList<>();
+    private List<Pokemon> pokemons = new ArrayList<>();
 
-    public void addPokemon(int pokemonId, String pokemonName) {
+    public void addPokemon (int pokemonId, String pokemonName) {
         if (pokemons.size() >= 6)
             throw new TeamException("Maximum 6 pokemons");
 
@@ -49,12 +49,12 @@ public class Team {
         );
     }
 
-    public void removePokemon(UUID id) {
+    public void removePokemon (UUID id) {
         pokemons.removeIf(tp -> tp.getId().equals(id));
         recalculatePositions();
     }
 
-    public void movePokemons(List<PokemonPositionInput> newPositions) {
+    public void movePokemons (List<PokemonPositionInput> newPositions) {
         validateNewPositions(newPositions);
 
         Map<UUID, Integer> desiredPositionById = newPositions.stream()
@@ -65,7 +65,7 @@ public class Team {
         recalculatePositions();
     }
 
-    private void validateNewPositions(List<PokemonPositionInput> newPositions) {
+    private void validateNewPositions (List<PokemonPositionInput> newPositions) {
         if (newPositions.size() != pokemons.size()) {
             throw new TeamException("You must indicate the positions for all the pokemons in the team");
         }
@@ -102,9 +102,21 @@ public class Team {
         }
     }
 
-    public void recalculatePositions() {
+    public void recalculatePositions () {
         for (int i = 0; i < pokemons.size(); i++) {
             pokemons.get(i).setPosition(i);
         }
+    }
+    public Team() {}
+
+    public Team (String name, Trainer trainer){
+        this.name = name;
+        this.trainer = trainer;
+    }
+
+    public Team (String name, Trainer trainer, List<Pokemon> pokemons){
+        this.name = name;
+        this.trainer = trainer;
+        this.pokemons = pokemons;
     }
 }

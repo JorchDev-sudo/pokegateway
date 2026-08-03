@@ -2,21 +2,22 @@ package com.jorchdev.poketeams.pokegateway.mappers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.requests.RegisterRequestDto;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TrainerSummary;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TrainerMapper {
-    public TrainerResponseDto toDto(Trainer trainer) {
-        TrainerResponseDto response = new TrainerResponseDto();
+    public TrainerResponse toDto(Trainer trainer) {
 
-        response.id = trainer.getId();
-        response.name = trainer.getName();
-        response.email = trainer.getEmail();
-        response.team = TeamMapper.toSummary(trainer.getTeam());
-
-        return response;
+        return new TrainerResponse(
+                trainer.getId(),
+                trainer.getName(),
+                trainer.getEmail(),
+                TeamMapper.toSummary(
+                        trainer.getTeam()
+                )
+        );
     }
 
     public static TrainerSummary toBasicDto(Trainer trainer) {

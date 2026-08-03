@@ -33,14 +33,18 @@ public class Pokemon {
 
     public Pokemon(){}
 
-    public Pokemon(String nickname) {
-        this.nickname = nickname;
-    }
-
     public Pokemon(Team team, int pokemonId, String name, int position) {
         this.team = team;
         this.pokemonId = pokemonId;
         this.name = name;
+        this.position = position;
+    }
+
+    public Pokemon(Team team, int pokemonId, String name, String nickname, int position) {
+        this.team = team;
+        this.pokemonId = pokemonId;
+        this.name = name;
+        this.nickname = nickname;
         this.position = position;
     }
 }

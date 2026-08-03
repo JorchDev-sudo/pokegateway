@@ -1,8 +1,8 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.ApiPokemonResponse;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
@@ -45,7 +45,7 @@ public class TeamService {
         this.pokemonServiceClient = pokemonServiceClient;
     }
 
-    public TeamResponseDto createTeam(UUID trainerId, String name) throws TrainerNotFoundException {
+    public TeamResponse createTeam(UUID trainerId, String name) throws TrainerNotFoundException {
         Trainer trainer = trainerHelper.getTrainerById(trainerId);
 
         if (trainer.getTeam() != null) {
@@ -55,25 +55,25 @@ public class TeamService {
         Team team = mapper.toEntity(name, trainer);
         Team savedTeam = teamRepository.save(team);
 
-        trainerHelper.asignTeamToTrainer(trainer, savedTeam);
+        trainer.setTeam(savedTeam);
 
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto findTeamById(UUID teamId) throws EntityNotFoundException {
+    public TeamResponse findTeamById(UUID teamId) throws EntityNotFoundException {
         Team team = helper.getTeamById(teamId);
 
-        TeamResponseDto dto = mapper.toDto(team);
+        TeamResponse dto = mapper.toDto(team);
 
         System.out.println(dto);
 
         return dto;
     }
 
-    public List<TeamResponseDto> findAllTeams() {
+    public List<TeamResponse> findAllTeams() {
         List<Team> teams = teamRepository.findAll();
 
-        List<TeamResponseDto> response = new ArrayList<>();
+        List<TeamResponse> response = new ArrayList<>();
 
         for (Team team : teams) {
             response.add(mapper.toDto(team));
@@ -82,29 +82,30 @@ public class TeamService {
         return response;
     }
 
-    public TeamResponseDto addPokemonToTeamById(int pokemonId, UUID teamId) throws TeamException, EntityNotFoundException {
+    public TeamResponse addPokemonToTeamById(int pokemonId, UUID teamId) throws TeamException, EntityNotFoundException {
         Team team = helper.getTeamById(teamId);
 
-        PokemonResponseDto pokemon = pokemonServiceClient.getPokemonById(pokemonId);
+        ApiPokemonResponse pokemon = pokemonServiceClient.getPokemonById(pokemonId);
 
-        team.addPokemon(pokemon.id, pokemon.name);
+        team.addPokemon(pokemon.id(), pokemon.name());
         Team savedTeam = teamRepository.save(team);
 
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto addPokemonToTeamByName(String name, UUID teamId) throws TeamException, EntityNotFoundException {
+    public TeamResponse addPokemonToTeamByName(String name, UUID teamId) throws TeamException, EntityNotFoundException {
+        //TODO Eliminar este helper y usar el repositorio directamente
         Team team = helper.getTeamById(teamId);
 
-        PokemonResponseDto pokemon = pokemonServiceClient.getPokemonByName(name);
+        ApiPokemonResponse pokemon = pokemonServiceClient.getPokemonByName(name);
 
-        team.addPokemon(pokemon.id, pokemon.name);
+        team.addPokemon(pokemon.id(), pokemon.name());
         Team savedTeam = teamRepository.save(team);
 
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto movePokemons(List<PokemonPositionInput> positions, UUID teamId) {
+    public TeamResponse movePokemons(List<PokemonPositionInput> positions, UUID teamId) {
         Team team = helper.getTeamById(teamId);
 
         team.movePokemons(positions);
@@ -114,7 +115,7 @@ public class TeamService {
         return mapper.toDto(savedTeam);
     }
 
-    public TeamResponseDto removePokemon(UUID id, UUID teamId) throws PokemonNotFoundInTeamException {
+    public TeamResponse removePokemon(UUID id, UUID teamId) throws PokemonNotFoundInTeamException {
         Team team = helper.getTeamById(teamId);
 
         team.removePokemon(id);
