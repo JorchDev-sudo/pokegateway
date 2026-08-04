@@ -21,6 +21,7 @@ public class PokemonService {
         this.teamRepository = teamRepository;
     }
 
+    //Todo Deprecate this
     public ApiPokemonResponse changePokemonNickname (Team team, UUID id, String newNickname){
         for (Pokemon pokemon : team.getPokemons()){
             if (pokemon.getId().equals(id)){

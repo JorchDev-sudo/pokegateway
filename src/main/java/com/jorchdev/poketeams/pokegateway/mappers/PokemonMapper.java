@@ -9,7 +9,7 @@ public class PokemonMapper {
     public ApiPokemonResponse toDto (Pokemon pokemon){
         return new ApiPokemonResponse(
                 pokemon.getPokemonId(),
-                pokemon.getName(),
+                pokemon.getPokemonName(),
                 pokemon.getTypes(),
                 pokemon.getMoves());
     }

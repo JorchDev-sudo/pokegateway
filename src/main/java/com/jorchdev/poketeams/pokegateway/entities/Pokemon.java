@@ -19,7 +19,7 @@ public class Pokemon {
 
     private int pokemonId;
 
-    private String name;
+    private String pokemonName;
 
     @Setter
     private String nickname;
@@ -33,18 +33,23 @@ public class Pokemon {
 
     public Pokemon(){}
 
-    public Pokemon(Team team, int pokemonId, String name, int position) {
+    public Pokemon(Team team, int pokemonId, String pokemonName, int position) {
         this.team = team;
+
         this.pokemonId = pokemonId;
-        this.name = name;
+        this.pokemonName = pokemonName;
+        this.nickname = pokemonName;
+
         this.position = position;
     }
 
-    public Pokemon(Team team, int pokemonId, String name, String nickname, int position) {
+    public Pokemon(Team team, int pokemonId, String pokemonName, String nickname, int position) {
         this.team = team;
+
         this.pokemonId = pokemonId;
-        this.name = name;
+        this.pokemonName = pokemonName;
         this.nickname = nickname;
+
         this.position = position;
     }
 }

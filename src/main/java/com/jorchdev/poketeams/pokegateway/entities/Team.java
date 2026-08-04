@@ -1,16 +1,14 @@
 package com.jorchdev.poketeams.pokegateway.entities;
 
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonSyncInput;
 import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamException;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Slf4j
 @Entity
@@ -35,78 +33,83 @@ public class Team {
     @OrderBy("position ASC")
     private List<Pokemon> pokemons = new ArrayList<>();
 
-    public void addPokemon (int pokemonId, String pokemonName) {
-        if (pokemons.size() >= 6)
+    //Add pokemons to this Team
+    private Pokemon addPokemon(int pokemonId, String pokemonName, String nickname) {
+        Pokemon p = new Pokemon(this, pokemonId, pokemonName, nickname == null ? pokemonName : nickname, pokemons.size());
+
+        this.pokemons.add(p);
+        return p;
+    }
+
+    //Accept a preconstructed Team and Sync this Team to the incoming synced Team
+    public void syncPokemons(List<PokemonSyncInput> syncedTeam) {
+        validateSyncTeam(syncedTeam);
+
+        Set<UUID> idsInRequest = syncedTeam.stream()
+                .map(input -> input.id)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        this.pokemons.removeIf(p -> !idsInRequest.contains(p.getId()));
+
+        List<Pokemon> ordered = syncedTeam.stream()
+                .sorted(Comparator.comparingInt(input -> input.position))
+                .map(this::resolvePokemon)
+                .toList();
+
+        this.pokemons.clear();
+        this.pokemons.addAll(ordered);
+
+        recalculatePositions();
+    }
+
+    //Resolves the changes in a existing Pokemon
+    private Pokemon resolvePokemon(PokemonSyncInput input) {
+        if (input.id == null) {
+            return addPokemon(input.pokemonId, input.pokemonName, input.nickname);
+        }
+
+        Pokemon existing = this.pokemons.stream()
+                .filter(p -> p.getId().equals(input.id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Pokemon does'nt belong to this team: " + input.id));
+
+        existing.setNickname(input.nickname != null ? input.nickname : existing.getPokemonName());
+        return existing;
+    }
+
+    //Validates the incoming synced Team
+    private void validateSyncTeam(List<PokemonSyncInput> syncedTeam) {
+        if (syncedTeam.size() > 6) {
             throw new TeamException("Maximum 6 pokemons");
-
-        pokemons.add(
-                new Pokemon(
-                        this,
-                        pokemonId,
-                        pokemonName,
-                        pokemons.size()
-                )
-        );
-    }
-
-    public void removePokemon (UUID id) {
-        pokemons.removeIf(tp -> tp.getId().equals(id));
-        recalculatePositions();
-    }
-
-    public void movePokemons (List<PokemonPositionInput> newPositions) {
-        validateNewPositions(newPositions);
-
-        Map<UUID, Integer> desiredPositionById = newPositions.stream()
-                .collect(Collectors.toMap(PokemonPositionInput::id, PokemonPositionInput::position));
-
-        pokemons.sort(Comparator.comparingInt(tp -> desiredPositionById.get(tp.getId())));
-
-        recalculatePositions();
-    }
-
-    private void validateNewPositions (List<PokemonPositionInput> newPositions) {
-        if (newPositions.size() != pokemons.size()) {
-            throw new TeamException("You must indicate the positions for all the pokemons in the team");
         }
 
-        Set<UUID> currentIds = pokemons.stream()
-                .map(Pokemon::getId)
-                .collect(Collectors.toSet());
-
-        Set<UUID> incomingIds = newPositions.stream()
-                .map(PokemonPositionInput::id)
-                .collect(Collectors.toSet());
-
-        if (!currentIds.equals(incomingIds)) {
-            newPositions.forEach(tp -> {
-                log.error(
-                        "Pokemon position inputs: {} {}",
-                        tp.id(), tp.position()
-                );
-            });
-
-            throw new TeamException("The positions must refer exactly to the Pokemon currently on the team, without duplicates.");
+        Set<Integer> positions = syncedTeam.stream().map(i -> i.position).collect(Collectors.toSet());
+        if (positions.size() != syncedTeam.size()) {
+            throw new TeamException("There's duplicated positions in the request");
         }
 
-        Set<Integer> incomingPositions = newPositions.stream()
-                .map(PokemonPositionInput::position)
-                .collect(Collectors.toSet());
-
-        Set<Integer> expectedRange = IntStream.range(0, pokemons.size())
-                .boxed()
-                .collect(Collectors.toSet());
-
-        if (!incomingPositions.equals(expectedRange)) {
-            throw new TeamException("The positions must be a contiguous range from 0 to N-1, with no duplicates or gaps.");
+        Set<UUID> existingIds = this.pokemons.stream().map(Pokemon::getId).collect(Collectors.toSet());
+        for (PokemonSyncInput input : syncedTeam) {
+            if (input.id != null && !existingIds.contains(input.id)) {
+                throw new IllegalArgumentException("Pokemon not found: " + input.id);
+            }
+            if (input.id == null && (input.pokemonId == 0)) {
+                throw new IllegalArgumentException("The incoming pokemon must have a pokemon id");
+            }
+            if (input.id == null && (input.pokemonName == null || input.pokemonName.isBlank())) {
+                throw new IllegalArgumentException("The incoming pokemon must have a pokemon name");
+            }
         }
     }
 
-    public void recalculatePositions () {
+    //Recalculates the pokemons positions
+    private void recalculatePositions() {
         for (int i = 0; i < pokemons.size(); i++) {
             pokemons.get(i).setPosition(i);
         }
     }
+
     public Team() {}
 
     public Team (String name, Trainer trainer){

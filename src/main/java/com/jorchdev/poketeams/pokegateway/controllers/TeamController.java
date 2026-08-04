@@ -2,7 +2,7 @@ package com.jorchdev.poketeams.pokegateway.controllers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonSyncInput;
 import com.jorchdev.poketeams.pokegateway.services.TeamService;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -32,6 +32,7 @@ public class TeamController {
         return service.findTeamById(id);
     }
 
+    //Todo Add pagination
     @QueryMapping
     public List<TeamResponse> findAllTeams(){
         return service.findAllTeams();
@@ -45,42 +46,11 @@ public class TeamController {
     }
 
     @MutationMapping
-    public TeamResponse addPokemonToTeamById(@Argument int pokemonId, Authentication auth) {
+    public TeamResponse syncPokemons(@Argument List<PokemonSyncInput> pokemons, Authentication auth) {
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         UUID teamId = trainer.getTeam().getId();
 
-        return service.addPokemonToTeamById(pokemonId, teamId);
-    }
-
-    @MutationMapping
-    public TeamResponse addPokemonToTeamByName(@Argument String pokemonName, Authentication auth) {
-        Trainer trainer = trainerHelper.getCurrentTrainer(auth);
-
-        UUID teamId = trainer.getTeam().getId();
-
-        return service.addPokemonToTeamByName(pokemonName, teamId);
-    }
-
-    /*
-    @MutationMapping
-    public TeamResponse addPreConstructedTeam(@Argument )
-     */
-    @MutationMapping
-    public TeamResponse movePokemons(@Argument List<PokemonPositionInput> positions, Authentication auth) {
-        Trainer trainer = trainerHelper.getCurrentTrainer(auth);
-
-        UUID teamId = trainer.getTeam().getId();
-
-        return service.movePokemons(positions, teamId);
-    }
-
-    @MutationMapping
-    public TeamResponse removePokemonFromTeamById(@Argument UUID id, Authentication auth) {
-        Trainer trainer = trainerHelper.getCurrentTrainer(auth);
-
-        UUID teamId = trainer.getTeam().getId();
-
-        return service.removePokemon(id, teamId);
+        return service.syncPokemons(pokemons, teamId);
     }
 }

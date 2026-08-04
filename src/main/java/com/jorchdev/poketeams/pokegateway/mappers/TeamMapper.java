@@ -50,7 +50,7 @@ public class TeamMapper {
                     new InnerPokemonResponse(
                             pokemon.getId(),
                             pokemon.getPokemonId(),
-                            pokemon.getName(),
+                            pokemon.getPokemonName(),
                             pokemon.getNickname(),
                             i
                     )

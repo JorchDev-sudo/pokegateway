@@ -1,10 +1,9 @@
 package com.jorchdev.poketeams.pokegateway.services.helpers;
 
-import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
 import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
+import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerException;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -31,17 +30,17 @@ public class TrainerHelper {
 
     public Trainer getTrainerById(UUID id) {
         return repository.findById(id)
-                .orElseThrow(() -> new TrainerNotFoundException("Trainer with id " + id + " not found"));
+                .orElseThrow(() -> new TrainerException("Trainer with id " + id + " not found"));
     }
 
     public Trainer getTrainerByName(String name) {
         return repository.findByName(name)
-                .orElseThrow(() -> new TrainerNotFoundException("Trainer with name " + name + " not found"));
+                .orElseThrow(() -> new TrainerException("Trainer with name " + name + " not found"));
     }
 
     public Trainer getTrainerByEmail(String email) {
         return repository.findByEmail(email)
-                .orElseThrow(() -> new TrainerNotFoundException("Trainer with email " + email + " not found"));
+                .orElseThrow(() -> new TrainerException("Trainer with email " + email + " not found"));
     }
 
     public Trainer createTrainer(Trainer trainer) {

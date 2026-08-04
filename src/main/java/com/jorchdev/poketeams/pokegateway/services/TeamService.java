@@ -1,20 +1,18 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.ApiPokemonResponse;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonPositionInput;
-import com.jorchdev.poketeams.pokegateway.exceptions.team.PokemonNotFoundInTeamException;
-import com.jorchdev.poketeams.pokegateway.exceptions.team.TeamException;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerAlreadyHaveATeamException;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonSyncInput;
+import com.jorchdev.poketeams.pokegateway.exceptions.pokemon.PokemonException;
+import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerException;
 import com.jorchdev.poketeams.pokegateway.mappers.TeamMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TeamRepository;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TeamHelper;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,11 +43,11 @@ public class TeamService {
         this.pokemonServiceClient = pokemonServiceClient;
     }
 
-    public TeamResponse createTeam(UUID trainerId, String name) throws TrainerNotFoundException {
+    public TeamResponse createTeam(UUID trainerId, String name) throws TrainerException {
         Trainer trainer = trainerHelper.getTrainerById(trainerId);
 
         if (trainer.getTeam() != null) {
-            throw new TrainerAlreadyHaveATeamException("You can only have a team");
+            throw new TrainerException("You can only have a team");
         }
 
         Team team = mapper.toEntity(name, trainer);
@@ -82,47 +80,21 @@ public class TeamService {
         return response;
     }
 
-    public TeamResponse addPokemonToTeamById(int pokemonId, UUID teamId) throws TeamException, EntityNotFoundException {
+    @Transactional
+    public TeamResponse syncPokemons(List<PokemonSyncInput> pokemons, UUID teamId) {
         Team team = helper.getTeamById(teamId);
 
-        ApiPokemonResponse pokemon = pokemonServiceClient.getPokemonById(pokemonId);
+        //Todo Add more pokemon validations
+        for  (PokemonSyncInput pokemon : pokemons) {
+            if (pokemonServiceClient.getPokemonById(pokemon.pokemonId).id() == 0) {
+                throw new PokemonException("Pokemon not found");
+            }
+        }
 
-        team.addPokemon(pokemon.id(), pokemon.name());
-        Team savedTeam = teamRepository.save(team);
-
-        return mapper.toDto(savedTeam);
-    }
-
-    public TeamResponse addPokemonToTeamByName(String name, UUID teamId) throws TeamException, EntityNotFoundException {
-        //TODO Eliminar este helper y usar el repositorio directamente
-        Team team = helper.getTeamById(teamId);
-
-        ApiPokemonResponse pokemon = pokemonServiceClient.getPokemonByName(name);
-
-        team.addPokemon(pokemon.id(), pokemon.name());
-        Team savedTeam = teamRepository.save(team);
-
-        return mapper.toDto(savedTeam);
-    }
-
-    public TeamResponse movePokemons(List<PokemonPositionInput> positions, UUID teamId) {
-        Team team = helper.getTeamById(teamId);
-
-        team.movePokemons(positions);
+        team.syncPokemons(pokemons);
 
         Team savedTeam = teamRepository.save(team);
 
         return mapper.toDto(savedTeam);
     }
-
-    public TeamResponse removePokemon(UUID id, UUID teamId) throws PokemonNotFoundInTeamException {
-        Team team = helper.getTeamById(teamId);
-
-        team.removePokemon(id);
-
-        Team savedTeam = teamRepository.save(team);
-
-        return mapper.toDto(savedTeam);
-    }
-
 }

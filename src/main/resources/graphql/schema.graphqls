@@ -1,6 +1,6 @@
 type Query {
-    findPokemonById(id: Int!): Pokemon!
-    findPokemonByName(name: String!): Pokemon!
+    findPokemonById(id: Int!): ApiPokemon!
+    findPokemonByName(name: String!): ApiPokemon!
 
     findTrainerById(id: ID!): Trainer!
     findTrainerByName(name: String!): Trainer!
@@ -14,19 +14,14 @@ type Query {
 type Mutation {
     createTeam(name: String!): Team!
 
-    addPokemonToTeamById(pokemonId: Int!):Team!
-    addPokemonToTeamByName(pokemonName: String!):Team!
-
-    changePokemonNickName(nickname: String!): Pokemon
-
-    removePokemonFromTeamById(id: ID!):Team!
+    #changePokemonNickName(nickname: String!): Pokemon
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
     changePassword(input: ChangePasswordInput!): Boolean!
 
-    deleteMyTrainer: Boolean!
+    syncPokemons(pokemons: [PokemonSyncInput]!): Team!
 
-    movePokemons(positions: [PokemonPositionInput!]!): Team!
+    deleteMyTrainer: Boolean!
 }
 
 type Trainer {
@@ -43,20 +38,20 @@ type Team{
     pokemons: [TeamPokemon]
 }
 
-type Pokemon {
+type ApiPokemon {
     id: Int!
-    nickname: String!
     name: String!
     types: [String!]!
     moves: [String!]!
-    position: Int!
 }
 
 type TeamPokemon {
     id: ID!
+
     pokemonId: Int!
-    nickname: String!
-    name: String!
+    pokemonName: String!
+
+    nickname: String
     position: Int!
 }
 
@@ -70,8 +65,13 @@ input ChangePasswordInput {
     newPassword: String!
 }
 
-input PokemonPositionInput {
-    id: ID!
+input PokemonSyncInput {
+    id: ID
+
+    pokemonId: Int!
+    pokemonName: String!
+
+    nickname: String
     position: Int!
 }
 

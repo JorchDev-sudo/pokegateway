@@ -6,7 +6,7 @@ import com.jorchdev.poketeams.pokegateway.dtos.responses.LoginResponse;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerNotFoundException;
+import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerException;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.TrainerService;
@@ -88,7 +88,7 @@ public class AuthService {
                 trainerRepository.findByEmail(
                                 request.email)
                         .orElseThrow(() ->
-                                new TrainerNotFoundException(
+                                new TrainerException(
                                         "Trainer not found"));
 
         String token =

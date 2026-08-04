@@ -39,10 +39,13 @@ public class PokemonController {
         return pokemonServiceClient.getPokemonByName(name);
     }
 
+    /*
+    Todo Deprecate this
     @MutationMapping
     public ApiPokemonResponse changePokemonName(UUID id, String name, Authentication auth){
         Trainer trainer = trainerHelper.getCurrentTrainer(auth);
 
         return pokemonService.changePokemonNickname(trainer.getTeam(),  id, name);
     }
+     */
 }
