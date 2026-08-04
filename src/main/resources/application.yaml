@@ -4,11 +4,24 @@ spring:
   profiles:
     active: dev
 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 ---
 spring:
   config:
     activate:
       on-profile: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_SQL: true
 
 logging:
   level:
@@ -16,4 +29,8 @@ logging:
 
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}
+
+
+
+jwt_secret: "devTest"
 

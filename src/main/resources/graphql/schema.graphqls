@@ -1,45 +1,77 @@
-type Pokemon {
-    id: ID!
-    name: String!
-    types: [String!]!
-    moves: [String!]!
-}
-
 type Query {
-    findPokemonById(id: ID!): Pokemon
-    findPokemonByName(name: String!): Pokemon
+    findPokemonById(id: Int!): ApiPokemon!
+    findPokemonByName(name: String!): ApiPokemon!
 
-    findTrainerById(id: ID!): Trainer
-    findTrainerByName(name: String!): Trainer
-    me: Trainer
+    findTrainerById(id: ID!): Trainer!
+    findTrainerByName(name: String!): Trainer!
 
-    findTeamById(id: ID!): Team
+    me: Trainer!
+
+    findTeamById(id: ID!): Team!
     findAllTeams: [Team!]!
 }
 
 type Mutation {
-    registerTrainer(name: String!, email: String!, password: String!): Trainer
-    loginTrainer(email: String!, password: String!): AuthPayload
-    createTeam(trainerId: ID!, name: String!): Team
+    createTeam(name: String!): Team!
 
-    addPokemonToTeam(pokemonId: ID!, teamId: ID!):Team
-}
+    #changePokemonNickName(nickname: String!): Pokemon
 
-type AuthPayload {
-    token: String!
-    trainer: Trainer!
-}
+    updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
+    changePassword(input: ChangePasswordInput!): Boolean!
 
-type Team{
-    id: ID!
-    name: String!
-    pokemons: [Pokemon!]!
+    syncPokemons(pokemons: [PokemonSyncInput]!): Team!
+
+    deleteMyTrainer: Boolean!
 }
 
 type Trainer {
     id: ID!
     name: String!
     email: String!
-    password: String!
     team: Team
 }
+
+type Team{
+    id: ID!
+    name: String!
+    trainer: Trainer!
+    pokemons: [TeamPokemon]
+}
+
+type ApiPokemon {
+    id: Int!
+    name: String!
+    types: [String!]!
+    moves: [String!]!
+}
+
+type TeamPokemon {
+    id: ID!
+
+    pokemonId: Int!
+    pokemonName: String!
+
+    nickname: String
+    position: Int!
+}
+
+input UpdateProfileInput {
+    name: String!
+    email: String!
+}
+
+input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
+}
+
+input PokemonSyncInput {
+    id: ID
+
+    pokemonId: Int!
+    pokemonName: String!
+
+    nickname: String
+    position: Int!
+}
+

@@ -1,56 +1,100 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.PokemonResponseDto;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.exceptions.TeamFullException;
+import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.PokemonSyncInput;
+import com.jorchdev.poketeams.pokegateway.exceptions.pokemon.PokemonException;
+import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerException;
+import com.jorchdev.poketeams.pokegateway.mappers.TeamMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TeamRepository;
+import com.jorchdev.poketeams.pokegateway.services.helpers.TeamHelper;
+import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class TeamService {
     private final TeamRepository teamRepository;
-    private final TrainerService trainerService;
+    private final TeamHelper helper;
+    private final TeamMapper mapper;
+
+    private final TrainerHelper trainerHelper;
 
     private final PokemonServiceClient pokemonServiceClient;
 
     public TeamService(
             TeamRepository teamRepository,
-            TrainerService trainerService,
+            TeamHelper teamHelper,
+            TeamMapper teamMapper,
+            TrainerHelper trainerHelper,
             PokemonServiceClient pokemonServiceClient)
     {
         this.teamRepository = teamRepository;
-        this.trainerService = trainerService;
+        this.helper = teamHelper;
+        this.mapper = teamMapper;
+        this.trainerHelper = trainerHelper;
         this.pokemonServiceClient = pokemonServiceClient;
     }
 
-    public Team createTeam(UUID trainerId, String name) throws EntityNotFoundException {
-        Trainer trainer = trainerService.findTrainerById(trainerId)
-                .orElseThrow(EntityNotFoundException::new);
+    public TeamResponse createTeam(UUID trainerId, String name) throws TrainerException {
+        Trainer trainer = trainerHelper.getTrainerById(trainerId);
 
-        Team team = new Team();
-        team.setName(name);
-        team.setTrainer(trainer);
+        if (trainer.getTeam() != null) {
+            throw new TrainerException("You can only have a team");
+        }
 
-        return teamRepository.save(team);
+        Team team = mapper.toEntity(name, trainer);
+        Team savedTeam = teamRepository.save(team);
+
+        trainer.setTeam(savedTeam);
+
+        return mapper.toDto(savedTeam);
     }
 
-    public Team findTeamById(UUID teamId) throws EntityNotFoundException {
-        return teamRepository.findById(teamId)
-                .orElseThrow(EntityNotFoundException::new);
+    public TeamResponse findTeamById(UUID teamId) throws EntityNotFoundException {
+        Team team = helper.getTeamById(teamId);
+
+        TeamResponse dto = mapper.toDto(team);
+
+        System.out.println(dto);
+
+        return dto;
     }
 
-    public Team addPokemonToTeam(int pokemonId, UUID teamId) throws TeamFullException, EntityNotFoundException {
-        Team team = findTeamById(teamId);
+    public List<TeamResponse> findAllTeams() {
+        List<Team> teams = teamRepository.findAll();
 
-        PokemonResponseDto pokemon = pokemonServiceClient.getPokemonById(pokemonId);
+        List<TeamResponse> response = new ArrayList<>();
 
-        team.addPokemonId(pokemonId);
+        for (Team team : teams) {
+            response.add(mapper.toDto(team));
+        }
 
-        return teamRepository.save(team);
+        return response;
+    }
+
+    @Transactional
+    public TeamResponse syncPokemons(List<PokemonSyncInput> pokemons, UUID teamId) {
+        Team team = helper.getTeamById(teamId);
+
+        //Todo Add more pokemon validations
+        for  (PokemonSyncInput pokemon : pokemons) {
+            if (pokemonServiceClient.getPokemonById(pokemon.pokemonId).id() == 0) {
+                throw new PokemonException("Pokemon not found");
+            }
+        }
+
+        team.syncPokemons(pokemons);
+
+        Team savedTeam = teamRepository.save(team);
+
+        return mapper.toDto(savedTeam);
     }
 }

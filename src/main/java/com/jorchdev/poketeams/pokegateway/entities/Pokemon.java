@@ -1,0 +1,55 @@
+package com.jorchdev.poketeams.pokegateway.entities;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@Entity
+public class Pokemon {
+    @Id
+    @GeneratedValue
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Team team;
+
+    private int pokemonId;
+
+    private String pokemonName;
+
+    @Setter
+    private String nickname;
+
+    private List<String> types;
+
+    private List<String> moves;
+
+    @Setter
+    protected int position;
+
+    public Pokemon(){}
+
+    public Pokemon(Team team, int pokemonId, String pokemonName, int position) {
+        this.team = team;
+
+        this.pokemonId = pokemonId;
+        this.pokemonName = pokemonName;
+        this.nickname = pokemonName;
+
+        this.position = position;
+    }
+
+    public Pokemon(Team team, int pokemonId, String pokemonName, String nickname, int position) {
+        this.team = team;
+
+        this.pokemonId = pokemonId;
+        this.pokemonName = pokemonName;
+        this.nickname = nickname;
+
+        this.position = position;
+    }
+}
