@@ -1,0 +1,151 @@
+# .github/workflows/generate-docs.yml
+#
+# Genera documentación automática en la carpeta docs/ cada vez que se
+# FUSIONA (merge) un Pull Request de "develop" hacia "main".
+#
+# Por qué docs/ solo existe en main:
+# este workflow nunca hace checkout ni push hacia "develop", solo hacia
+# "main". Por lo tanto la carpeta docs/ nunca llega a develop.
+#
+# Requisito: crear el secret GEMINI_API_KEY en este repo
+#   Settings > Secrets and variables > Actions > New repository secret
+#   (clave gratuita en https://aistudio.google.com/apikey)
+
+name: Generar documentación (merge develop -> main)
+
+on:
+  pull_request:
+    types: [closed]     # Se dispara cuando el PR se cierra (mergeado o no)
+    branches: [main]    # Solo nos interesan PRs cuyo destino es main
+
+permissions:
+  contents: write        # Necesario para poder commitear y pushear a main
+
+jobs:
+  generate-docs:
+    # Filtro doble: que el PR se haya MERGEADO de verdad (no solo cerrado
+    # sin mergear) y que la rama de origen sea exactamente "develop".
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout de main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0   # historial completo: lo necesita git log/git diff
+
+      - name: Extraer commits y diff introducidos por el PR
+        id: diff
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+          DELIM="EOF_${{ github.run_id }}"
+
+          {
+            echo "commits<<$DELIM"
+            git log --pretty=format:"- **%h** | %ad | %an | %s" \
+              --date=format:"%Y-%m-%d %H:%M:%S" "$BASE_SHA".."$HEAD_SHA"
+            echo ""
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "diff<<$DELIM"
+            git diff "$BASE_SHA" "$HEAD_SHA" -- . \
+              ':(exclude)docs/**' \
+              ':(exclude)**/bun.lockb' \
+              ':(exclude)**/package-lock.json' \
+              ':(exclude)**/pnpm-lock.yaml' \
+              ':(exclude)**/*.lock' \
+              | head -c 60000
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +'%H-%M-%S')" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Generar el markdown con Gemini CLI
+        id: gemini
+        uses: google-github-actions/run-gemini-cli@v0.1.22
+        env:
+          # El runner de Actions siempre es un checkout nuevo, así que
+          # Gemini CLI nunca lo considera "trusted" por defecto desde que
+          # se introdujo la feature de trusted folders. Sin esto, falla con
+          # "Gemini CLI is not running in a trusted directory".
+          GEMINI_CLI_TRUST_WORKSPACE: "true"
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          # Sin herramientas: Gemini solo transforma texto, no toca el repo.
+          settings: |-
+            {
+              "tools": { "core": [] }
+            }
+          prompt: |-
+            Eres un generador de documentación técnica para el repositorio
+            "${{ github.repository }}", parte del proyecto PokeTeams.
+
+            Se acaba de fusionar un Pull Request de "develop" hacia "main".
+
+            ## Commits incluidos
+            ${{ steps.diff.outputs.commits }}
+
+            ## Diff completo
+            ```diff
+            ${{ steps.diff.outputs.diff }}
+            ```
+
+            Genera documentación en Markdown para el equipo de desarrollo.
+            Reglas estrictas:
+            - Responde SOLO con el contenido Markdown final. Nada de explicaciones,
+              nada de ``` alrededor de todo el documento, nada de "Aquí tienes...".
+            - Encabezado H1 con un título breve que resuma el cambio principal.
+            - Sección "## Resumen": 2-4 frases sobre el propósito de estos cambios.
+            - Sección "## Commits": lista cada commit con hash corto, fecha/hora y mensaje.
+            - Sección "## Detalle técnico": explica qué cambió y por qué, agrupado
+              por archivo o módulo, basándote en el diff.
+            - Si hay cambios en el schema de GraphQL, endpoints REST o dependencias,
+              agrégalos en una sección "## Cambios de API o dependencias".
+            - Tono técnico, claro, en español.
+
+      - name: Escribir el archivo en docs/
+        id: write
+        env:
+          DOC_CONTENT: ${{ steps.gemini.outputs.summary }}
+        run: |
+          DIR="docs/${{ steps.diff.outputs.date }}"
+          FILE="$DIR/${{ steps.diff.outputs.time }}_pr-${{ steps.diff.outputs.pr_number }}.md"
+          mkdir -p "$DIR"
+          printf '%s\n' "$DOC_CONTENT" > "$FILE"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Actualizar índice docs/README.md
+        run: |
+          INDEX="docs/README.md"
+          if [ ! -f "$INDEX" ]; then
+            {
+              echo "# Índice de documentación generada"
+              echo ""
+              echo "| Fecha | Hora | PR | Archivo |"
+              echo "|---|---|---|---|"
+            } > "$INDEX"
+          fi
+          RELATIVE="${{ steps.write.outputs.file }}"
+          RELATIVE="${RELATIVE#docs/}"
+          echo "| ${{ steps.diff.outputs.date }} | ${{ steps.diff.outputs.time }} | #${{ github.event.pull_request.number }} | [Ver](./$RELATIVE) |" >> "$INDEX"
+
+      - name: Commit y push de la documentación
+        run: |
+          git config user.name "poketeams-docs-bot"
+          git config user.email "docs-bot@users.noreply.github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "No hay cambios en docs/, nada que commitear."
+          else
+            git commit -m "docs: documentación automática para PR #${{ github.event.pull_request.number }} [skip ci]"
+            git push origin main
+          fi
