@@ -14,14 +14,14 @@ public class Trainer {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true, nullable = false)
+    private String auth0Sub;
+
     @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
-    private String password;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "trainer")
     private Team team;

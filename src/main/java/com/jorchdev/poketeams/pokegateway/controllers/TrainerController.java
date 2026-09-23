@@ -1,8 +1,8 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
+import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
-import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.exceptions.AuthException;
 import com.jorchdev.poketeams.pokegateway.services.TrainerService;
@@ -13,7 +13,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
-import javax.naming.AuthenticationException;
 import java.util.UUID;
 
 @Slf4j
@@ -31,7 +30,7 @@ public class TrainerController {
         Object principal = auth.getPrincipal();
 
         try {
-            CustomUserDetails user = (CustomUserDetails) principal;
+            Trainer user = (Trainer) principal;
             assert user != null;
 
             UUID trainerId = user.getId();
@@ -57,15 +56,5 @@ public class TrainerController {
         return trainerService.updateTrainer(
                 input,
                 authentication.getName());
-    }
-
-    @MutationMapping
-    public void changePassword(@Argument ChangePasswordInput input, Authentication authentication) {
-        trainerService.changePassword(authentication.getName(), input);
-    }
-
-    @MutationMapping
-    public void deleteTrainer(Authentication authentication) {
-        trainerService.deleteTrainer(authentication.getName());
     }
 }

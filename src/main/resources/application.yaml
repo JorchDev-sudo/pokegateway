@@ -15,12 +15,12 @@ spring:
       client:
         registration:
           auth0:
+            domain: ${OAUTH_DOMAIN}
             client-id: ${OAUTH0_CLIENT_ID}
             client-secret: ${OAUTH0_CLIENT_SECRET}
+            audience: "http://poketeamsauth"
+            redirect-uri: ${REDIRECT_URI}
             scope: openid, profile, email
-      resourceserver:
-        jwt:
-          issuer-uri: "https://dev-hndn80m8v8iqy45n.us.auth0.com/"
 
   config:
     activate:
@@ -48,6 +48,4 @@ logging:
 
 pokemon.service:
   base-url: ${POKEMON_SERVICE_URL:http://localhost:8081}
-
-jwt_secret: "devTest"
 

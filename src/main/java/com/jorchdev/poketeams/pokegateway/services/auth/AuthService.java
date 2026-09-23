@@ -1,103 +1,67 @@
 package com.jorchdev.poketeams.pokegateway.services.auth;
 
-import com.jorchdev.poketeams.pokegateway.dtos.requests.LoginRequestDto;
-import com.jorchdev.poketeams.pokegateway.dtos.requests.RegisterRequestDto;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.LoginResponse;
-import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
+import com.jorchdev.poketeams.pokegateway.client.Auth0Client;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.UserInfoResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.exceptions.BadCredentialsException;
-import com.jorchdev.poketeams.pokegateway.exceptions.trainer.TrainerException;
-import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
+import com.jorchdev.poketeams.pokegateway.entities.internal.UserSession;
+import com.jorchdev.poketeams.pokegateway.repositories.SessionRepository;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
-import com.jorchdev.poketeams.pokegateway.services.TrainerService;
-import com.jorchdev.poketeams.pokegateway.services.security.JwtService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TokenResponse;
+
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class AuthService {
-    private final TrainerService trainerService;
+
+    private final Auth0Client auth0Client;
     private final TrainerRepository trainerRepository;
-    private final TrainerMapper trainerMapper;
-
-    private final PasswordEncoder passwordEncoder;
-
-    private final JwtService jwtService;
-
-    private final AuthenticationManager authenticationManager;
+    private final SessionRepository sessionRepository;
 
     public AuthService(
-            TrainerService trainerService,
+            Auth0Client auth0Client,
             TrainerRepository trainerRepository,
-            TrainerMapper trainerMapper,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService,
-            AuthenticationManager authenticationManager)
+            SessionRepository sessionRepository)
     {
-        this.trainerService = trainerService;
+        this.auth0Client = auth0Client;
         this.trainerRepository = trainerRepository;
-        this.trainerMapper = trainerMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
+        this.sessionRepository = sessionRepository;
     }
 
-    public LoginResponse register(
-            RegisterRequestDto request) {
+    public String handleCallback(String code, String redirectUri) {
+        TokenResponse tokens = auth0Client.exchangeCodeForTokens(code, redirectUri);
+        UserInfoResponse userInfo = auth0Client.getUserInfo(tokens.accessToken());
 
-        Trainer trainer = trainerMapper.toEntity(request);
+        Trainer trainer = trainerRepository.findByAuth0Sub(userInfo.sub())
+                .orElseGet(() -> createTrainer(userInfo));
 
-        if (trainerRepository.existsByName(trainer.getName())) {
-            throw new BadCredentialsException(
-                    "Name already in use");
-        }
+        UserSession session = new UserSession(
+                trainer.getId(),
+                tokens.accessToken(),
+                tokens.refreshToken(),
+                Instant.now().plusSeconds(tokens.expiresIn()),
+                Instant.now().plus(Duration.ofDays(7))
+                );
 
-        if (trainerRepository.existsByEmail(trainer.getEmail())) {
-            throw new BadCredentialsException(
-                    "Email already in use");
-        }
 
-        trainer.setPassword(
-                passwordEncoder.encode(
-                        request.password));
-
-        TrainerResponse savedTrainer =
-                trainerService.createTrainer(trainer);
-
-        String token =
-                jwtService.generateToken(savedTrainer.id());
-
-        return new LoginResponse(
-                savedTrainer,
-                token);
+        sessionRepository.save(session);
+        return session.getSessionId();
     }
 
-    public LoginResponse login(
-            LoginRequestDto request) {
+    private Trainer createTrainer(UserInfoResponse userInfo) {
+        Trainer trainer = new Trainer();
+        trainer.setAuth0Sub(userInfo.sub());
+        trainer.setEmail(userInfo.email());
+        trainer.setName(userInfo.name());
+        return trainerRepository.save(trainer);
+    }
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email,
-                        request.password
-                )
-        );
-
-        Trainer trainer =
-                trainerRepository.findByEmail(
-                                request.email)
-                        .orElseThrow(() ->
-                                new TrainerException(
-                                        "Trainer not found"));
-
-        String token =
-                jwtService.generateToken(
-                        trainer.getId());
-
-        return new LoginResponse(
-                trainerMapper.toDto(trainer),
-                token
-        );
+    public void logout(String sessionId) {
+        sessionRepository.findById(sessionId).ifPresent(session -> {
+            auth0Client.revokeRefreshToken(session.getAuth0RefreshToken());
+            sessionRepository.deleteById(sessionId);
+        });
     }
 }

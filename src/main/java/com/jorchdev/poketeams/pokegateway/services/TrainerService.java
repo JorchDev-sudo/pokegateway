@@ -18,7 +18,6 @@ public class TrainerService {
     private final TrainerRepository repository;
     private final TrainerMapper mapper;
     private final TrainerHelper helper;
-    private final PasswordEncoder passwordEncoder;
 
     public TrainerService(
             TrainerRepository trainerRepository,
@@ -28,15 +27,7 @@ public class TrainerService {
     {
         this.repository = trainerRepository;
         this.mapper = trainerMapper;
-        this.passwordEncoder = passwordEncoder;
         this.helper = trainerHelper;
-    }
-
-    public TrainerResponse createTrainer(Trainer request) {
-        Trainer trainer = helper.createTrainer(request);
-        Trainer savedTrainer = repository.save(trainer);
-
-        return mapper.toDto(savedTrainer);
     }
 
     public TrainerResponse findTrainerById(UUID id){
@@ -60,32 +51,5 @@ public class TrainerService {
         Trainer savedTrainer = repository.save(trainer);
 
         return mapper.toDto(savedTrainer);
-    }
-
-    public void changePassword(
-            String email,
-            ChangePasswordInput input) {
-
-        Trainer trainer = helper.getTrainerByEmail(email);
-
-        if (!passwordEncoder.matches(
-                input.currentPassword(),
-                trainer.getPassword())) {
-
-            throw new BadCredentialsException(
-                    "Current password is incorrect");
-        }
-
-        trainer.setPassword(
-                passwordEncoder.encode(
-                        input.newPassword()));
-
-        repository.save(trainer);
-    }
-
-    public void deleteTrainer(String email) {
-        Trainer trainer = helper.getTrainerByEmail(email);
-
-        repository.delete(trainer);
     }
 }

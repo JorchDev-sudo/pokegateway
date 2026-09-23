@@ -12,6 +12,8 @@ public interface TrainerRepository extends JpaRepository<Trainer, UUID> {
     Optional<Trainer> findByName(String name);
     Optional<Trainer> findByEmail(String email);
 
+    Optional<Trainer> findByAuth0Sub(String auth0Sub);
+
     boolean existsByEmail(String email);
     boolean existsByName(String name);
 }
