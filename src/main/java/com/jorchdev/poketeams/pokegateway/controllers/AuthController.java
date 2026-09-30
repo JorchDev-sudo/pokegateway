@@ -1,17 +1,24 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
+import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
+import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
+import com.jorchdev.poketeams.pokegateway.repositories.SessionRepository;
+import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.auth.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -20,23 +27,55 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Value("${auth0.domain}")
+    private final SessionRepository sessionRepository;
+
+    private final TrainerRepository trainerRepository;
+
+    private final TrainerMapper trainerMapper;
+
+    @Value("${spring.auth0.domain}")
     private String domain;
 
-    @Value("${auth0.client-id}")
+    @Value("${spring.auth0.client-id}")
     private String clientId;
 
-    @Value("${auth0.redirect-uri}")
+    @Value("${spring.auth0.redirect-uri}")
     private String redirectUri;
 
-    @Value("${auth0.audience}")
+    @Value("${spring.auth0.audience}")
     private String audience;
 
-    @Value("${auth0.frontend-success-redirect}")
+    @Value("${spring.auth0.frontend-success-redirect}")
     private String frontendRedirect;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            SessionRepository sessionRepository,
+            TrainerRepository trainerRepository,
+            TrainerMapper trainerMapper
+    ) {
         this.authService = authService;
+        this.sessionRepository = sessionRepository;
+        this.trainerRepository = trainerRepository;
+        this.trainerMapper = trainerMapper;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<TrainerResponse> me(
+            HttpServletRequest request,
+            @CookieValue(name = "SESSION_ID", required = false) String sessionId) {
+
+        request.getAttribute(CsrfToken.class.getName());
+
+        if (sessionId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return sessionRepository.findById(sessionId)
+                .filter(session -> session.getSessionExpiresAt().isAfter(Instant.now()))
+                .flatMap(session -> trainerRepository.findById(session.getTrainerId()))
+                .map(trainer -> ResponseEntity.ok(trainerMapper.toDto(trainer)))
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @GetMapping("/login")

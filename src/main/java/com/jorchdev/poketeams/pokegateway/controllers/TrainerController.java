@@ -2,7 +2,6 @@ package com.jorchdev.poketeams.pokegateway.controllers;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.exceptions.AuthException;
 import com.jorchdev.poketeams.pokegateway.services.TrainerService;

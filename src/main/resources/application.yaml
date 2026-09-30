@@ -10,21 +10,17 @@ spring:
       path: /h2-console
 ---
 spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          auth0:
-            domain: ${OAUTH_DOMAIN}
-            client-id: ${OAUTH0_CLIENT_ID}
-            client-secret: ${OAUTH0_CLIENT_SECRET}
-            audience: "http://poketeamsauth"
-            redirect-uri: ${REDIRECT_URI}
-            scope: openid, profile, email
-
   config:
     activate:
       on-profile: dev
+
+  auth0:
+    domain: dev-hndn80m8v8iqy45n.us.auth0.com
+    client-id: ${OAUTH0_CLIENT_ID}
+    client-secret: ${OAUTH0_CLIENT_SECRET}
+    audience: "http://poketeamsauth"
+    redirect-uri: "http://localhost:8080/auth/callback"
+    frontend-success-redirect: "http://localhost:5173"
 
   jpa:
     hibernate:
@@ -38,9 +34,6 @@ spring:
 server:
   address: 0.0.0.0
   port: 8080
-
-auth0:
-  audience: "http://poketeamsauth"
 
 logging:
   level:

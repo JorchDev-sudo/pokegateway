@@ -38,6 +38,7 @@ public class AuthService {
                 .orElseGet(() -> createTrainer(userInfo));
 
         UserSession session = new UserSession(
+                userInfo.sub(),
                 trainer.getId(),
                 tokens.accessToken(),
                 tokens.refreshToken(),

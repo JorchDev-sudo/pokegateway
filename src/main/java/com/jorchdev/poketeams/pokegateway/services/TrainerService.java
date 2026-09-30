@@ -2,13 +2,10 @@ package com.jorchdev.poketeams.pokegateway.services;
 
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -22,8 +19,7 @@ public class TrainerService {
     public TrainerService(
             TrainerRepository trainerRepository,
             TrainerMapper trainerMapper,
-            TrainerHelper trainerHelper,
-            PasswordEncoder passwordEncoder)
+            TrainerHelper trainerHelper)
     {
         this.repository = trainerRepository;
         this.mapper = trainerMapper;
