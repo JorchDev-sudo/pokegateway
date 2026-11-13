@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
-import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
+import com.jorchdev.poketeams.pokegateway.client.pokeservice.PokemonServiceClient;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TeamResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Team;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;

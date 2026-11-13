@@ -1,0 +1,1 @@
+ALTER TABLE trainer DROP CONSTRAINT trainer_name_key;

@@ -5,6 +5,9 @@ type Query {
     findTrainerById(id: ID!): Trainer!
     findTrainerByName(name: String!): Trainer!
 
+    findTrainersByIds(ids: [ID!]!): [PublicTrainer!]!
+    searchTrainers(name: String!): [PublicTrainer!]!
+
     me: Trainer!
 
     findTeamById(id: ID!): Team!
@@ -17,7 +20,6 @@ type Mutation {
     #changePokemonNickName(nickname: String!): Pokemon
 
     updateProfile(id:ID!, input: UpdateProfileInput!): Trainer!
-    changePassword(input: ChangePasswordInput!): Boolean!
 
     syncPokemons(pokemons: [PokemonSyncInput]!): Team!
 
@@ -30,6 +32,8 @@ type Trainer {
     email: String!
     team: Team
 }
+
+type PublicTrainer { id: ID!  name: String! }
 
 type Team{
     id: ID!

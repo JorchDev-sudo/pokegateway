@@ -1,19 +1,23 @@
 package com.jorchdev.poketeams.pokegateway.config.security;
 
-import com.jorchdev.poketeams.pokegateway.client.security.JwtAuthenticationFilter;
+
+import com.jorchdev.poketeams.pokegateway.client.frontend.CsrfCookieFilter;
+import com.jorchdev.poketeams.pokegateway.client.pokechat.ChatSessionFilter;
+import com.jorchdev.poketeams.pokegateway.client.pokeservice.PokeServiceSessionFilter;
+import com.jorchdev.poketeams.pokegateway.client.security.SessionAuthenticationFilter;
+import com.jorchdev.poketeams.pokegateway.components.InternalJwtIssuer;
+import com.jorchdev.poketeams.pokegateway.components.session.SessionAuthenticator;
+import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,25 +28,10 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) {
-
-        return configuration.getAuthenticationManager();
-    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
 
-        //TODO Cambiar la url del cors a un archivo environment
         config.setAllowedOrigins(
                 List.of("http://localhost:5173")
         );
@@ -66,26 +55,24 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            JwtAuthenticationFilter jwtFilter) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           SessionAuthenticator authenticator,
+                                           TrainerRepository trainerRepository,
+                                           InternalJwtIssuer issuer) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/graphql").permitAll()
-
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/h2-console").permitAll()
+                        .requestMatchers("/auth/login", "/auth/callback", "/auth/me", "/graphql", "/graphiql", "/subscriptions", "/chat/**", "/chat-ws/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(
-                        jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .addFilterBefore(new SessionAuthenticationFilter(authenticator, trainerRepository), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new ChatSessionFilter(authenticator, issuer), CsrfCookieFilter.class)
+                .addFilterAfter(new PokeServiceSessionFilter(authenticator, issuer), ChatSessionFilter.class);
 
         return http.build();
     }
