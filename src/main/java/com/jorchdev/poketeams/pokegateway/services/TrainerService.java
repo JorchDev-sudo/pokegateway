@@ -1,16 +1,16 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
+import com.jorchdev.poketeams.pokegateway.dtos.PublicTrainer;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,26 +18,27 @@ public class TrainerService {
     private final TrainerRepository repository;
     private final TrainerMapper mapper;
     private final TrainerHelper helper;
-    private final PasswordEncoder passwordEncoder;
 
     public TrainerService(
             TrainerRepository trainerRepository,
             TrainerMapper trainerMapper,
-            TrainerHelper trainerHelper,
-            PasswordEncoder passwordEncoder)
+            TrainerHelper trainerHelper)
     {
         this.repository = trainerRepository;
         this.mapper = trainerMapper;
-        this.passwordEncoder = passwordEncoder;
         this.helper = trainerHelper;
     }
 
-    public TrainerResponse createTrainer(Trainer request) {
-        Trainer trainer = helper.createTrainer(request);
-        Trainer savedTrainer = repository.save(trainer);
-
-        return mapper.toDto(savedTrainer);
+    public List<PublicTrainer> findTrainersById(List<UUID> ids) {
+        return repository.findAllById(ids).stream()
+                .map(t -> new PublicTrainer(t.getId(), t.getName())).toList();
     }
+
+    public List<PublicTrainer> searchTrainer(String name) {
+        return repository.findTop10ByNameContainingIgnoreCase(name.trim()).stream()
+                .map(t -> new PublicTrainer(t.getId(), t.getName())).toList();
+    }
+
 
     public TrainerResponse findTrainerById(UUID id){
         Trainer trainer = helper.getTrainerById(id);
@@ -60,32 +61,5 @@ public class TrainerService {
         Trainer savedTrainer = repository.save(trainer);
 
         return mapper.toDto(savedTrainer);
-    }
-
-    public void changePassword(
-            String email,
-            ChangePasswordInput input) {
-
-        Trainer trainer = helper.getTrainerByEmail(email);
-
-        if (!passwordEncoder.matches(
-                input.currentPassword(),
-                trainer.getPassword())) {
-
-            throw new BadCredentialsException(
-                    "Current password is incorrect");
-        }
-
-        trainer.setPassword(
-                passwordEncoder.encode(
-                        input.newPassword()));
-
-        repository.save(trainer);
-    }
-
-    public void deleteTrainer(String email) {
-        Trainer trainer = helper.getTrainerByEmail(email);
-
-        repository.delete(trainer);
     }
 }

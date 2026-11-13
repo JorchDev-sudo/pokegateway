@@ -1,18 +1,22 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
+import com.jorchdev.poketeams.pokegateway.dtos.PublicTrainer;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
-import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.ChangePasswordInput;
-import com.jorchdev.poketeams.pokegateway.entities.internal.CustomUserDetails;
+import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
+import com.jorchdev.poketeams.pokegateway.exceptions.AuthException;
 import com.jorchdev.poketeams.pokegateway.services.TrainerService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Controller
 public class TrainerController {
     private final TrainerService trainerService;
@@ -24,12 +28,32 @@ public class TrainerController {
 
     @QueryMapping
     public TrainerResponse me(Authentication auth){
-        CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
+        Object principal = auth.getPrincipal();
 
-        assert user != null;
-        UUID trainerId = user.getId();
+        try {
+            Trainer user = (Trainer) principal;
+            assert user != null;
 
-        return trainerService.findTrainerById(trainerId);
+            UUID trainerId = user.getId();
+
+            return trainerService.findTrainerById(trainerId);
+        } catch (Exception ex){
+            throw new AuthException("Not Authenticated");
+        }
+    }
+
+    @QueryMapping
+    public List<PublicTrainer> findTrainersByIds(@Argument List<UUID> ids) {
+        if (ids.size() > 100) throw new IllegalArgumentException("Too many ids");
+
+        return trainerService.findTrainersById(ids);
+    }
+
+    @QueryMapping
+    public List<PublicTrainer> searchTrainers(@Argument String name) {
+        if (name.trim().length() < 2) return List.of();
+
+        return trainerService.searchTrainer(name);
     }
 
     @QueryMapping
@@ -47,15 +71,5 @@ public class TrainerController {
         return trainerService.updateTrainer(
                 input,
                 authentication.getName());
-    }
-
-    @MutationMapping
-    public void changePassword(@Argument ChangePasswordInput input, Authentication authentication) {
-        trainerService.changePassword(authentication.getName(), input);
-    }
-
-    @MutationMapping
-    public void deleteTrainer(Authentication authentication) {
-        trainerService.deleteTrainer(authentication.getName());
     }
 }
