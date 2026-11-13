@@ -17,7 +17,7 @@ public class Trainer {
     @Column(unique = true, nullable = false)
     private String auth0Sub;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false, unique = true)

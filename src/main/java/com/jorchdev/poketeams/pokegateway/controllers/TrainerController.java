@@ -1,5 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
+import com.jorchdev.poketeams.pokegateway.dtos.PublicTrainer;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
@@ -12,6 +13,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -38,6 +40,20 @@ public class TrainerController {
         } catch (Exception ex){
             throw new AuthException("Not Authenticated");
         }
+    }
+
+    @QueryMapping
+    public List<PublicTrainer> findTrainersByIds(@Argument List<UUID> ids) {
+        if (ids.size() > 100) throw new IllegalArgumentException("Too many ids");
+
+        return trainerService.findTrainersById(ids);
+    }
+
+    @QueryMapping
+    public List<PublicTrainer> searchTrainers(@Argument String name) {
+        if (name.trim().length() < 2) return List.of();
+
+        return trainerService.searchTrainer(name);
     }
 
     @QueryMapping

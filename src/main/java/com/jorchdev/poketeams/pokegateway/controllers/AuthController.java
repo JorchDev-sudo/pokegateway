@@ -65,8 +65,6 @@ public class AuthController {
             HttpServletRequest request,
             @CookieValue(name = "SESSION_ID", required = false) String sessionId) {
 
-        request.getAttribute(CsrfToken.class.getName());
-
         if (sessionId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

@@ -1,13 +1,16 @@
 package com.jorchdev.poketeams.pokegateway.services;
 
+import com.jorchdev.poketeams.pokegateway.dtos.PublicTrainer;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.TrainerResponse;
 import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import com.jorchdev.poketeams.pokegateway.entities.internal.inputs.UpdateProfileInput;
 import com.jorchdev.poketeams.pokegateway.mappers.TrainerMapper;
 import com.jorchdev.poketeams.pokegateway.repositories.TrainerRepository;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,6 +28,17 @@ public class TrainerService {
         this.mapper = trainerMapper;
         this.helper = trainerHelper;
     }
+
+    public List<PublicTrainer> findTrainersById(List<UUID> ids) {
+        return repository.findAllById(ids).stream()
+                .map(t -> new PublicTrainer(t.getId(), t.getName())).toList();
+    }
+
+    public List<PublicTrainer> searchTrainer(String name) {
+        return repository.findTop10ByNameContainingIgnoreCase(name.trim()).stream()
+                .map(t -> new PublicTrainer(t.getId(), t.getName())).toList();
+    }
+
 
     public TrainerResponse findTrainerById(UUID id){
         Trainer trainer = helper.getTrainerById(id);

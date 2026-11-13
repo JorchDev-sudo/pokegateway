@@ -10,8 +10,12 @@ import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.TokenResponse;
 
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
+
+import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
 public class AuthService {
@@ -19,6 +23,8 @@ public class AuthService {
     private final Auth0Client auth0Client;
     private final TrainerRepository trainerRepository;
     private final SessionRepository sessionRepository;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public AuthService(
             Auth0Client auth0Client,
@@ -30,6 +36,12 @@ public class AuthService {
         this.sessionRepository = sessionRepository;
     }
 
+    private static String newSessionId() {
+        byte[] bytes = new byte[32];                       // 256 bits
+        RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
     public String handleCallback(String code, String redirectUri) {
         TokenResponse tokens = auth0Client.exchangeCodeForTokens(code, redirectUri);
         UserInfoResponse userInfo = auth0Client.getUserInfo(tokens.accessToken());
@@ -37,18 +49,16 @@ public class AuthService {
         Trainer trainer = trainerRepository.findByAuth0Sub(userInfo.sub())
                 .orElseGet(() -> createTrainer(userInfo));
 
+        String sessionId = newSessionId();
         UserSession session = new UserSession(
-                userInfo.sub(),
+                sessionId,
                 trainer.getId(),
                 tokens.accessToken(),
                 tokens.refreshToken(),
                 Instant.now().plusSeconds(tokens.expiresIn()),
-                Instant.now().plus(Duration.ofDays(7))
-                );
-
-
+                Instant.now().plus(Duration.ofDays(7)));
         sessionRepository.save(session);
-        return session.getSessionId();
+        return sessionId;
     }
 
     private Trainer createTrainer(UserInfoResponse userInfo) {
@@ -61,8 +71,9 @@ public class AuthService {
 
     public void logout(String sessionId) {
         sessionRepository.findById(sessionId).ifPresent(session -> {
-            auth0Client.revokeRefreshToken(session.getAuth0RefreshToken());
             sessionRepository.deleteById(sessionId);
+            try { auth0Client.revokeRefreshToken(session.getAuth0RefreshToken()); }
+            catch (Exception e) { log.warn("Refresh token revocation failed"); }
         });
     }
 }

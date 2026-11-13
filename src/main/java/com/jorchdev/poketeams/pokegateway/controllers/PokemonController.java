@@ -1,6 +1,6 @@
 package com.jorchdev.poketeams.pokegateway.controllers;
 
-import com.jorchdev.poketeams.pokegateway.client.PokemonServiceClient;
+import com.jorchdev.poketeams.pokegateway.client.pokeservice.PokemonServiceClient;
 import com.jorchdev.poketeams.pokegateway.dtos.responses.internal.ApiPokemonResponse;
 import com.jorchdev.poketeams.pokegateway.services.helpers.TrainerHelper;
 import org.springframework.graphql.data.method.annotation.Argument;

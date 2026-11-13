@@ -4,6 +4,7 @@ import com.jorchdev.poketeams.pokegateway.entities.Trainer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,5 @@ public interface TrainerRepository extends JpaRepository<Trainer, UUID> {
 
     Optional<Trainer> findByAuth0Sub(String auth0Sub);
 
-    boolean existsByEmail(String email);
-    boolean existsByName(String name);
+    List<Trainer> findTop10ByNameContainingIgnoreCase(String name);
 }
